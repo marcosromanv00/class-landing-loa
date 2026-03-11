@@ -1,0 +1,72 @@
+/* 
+  Library of America Redesign - Foundation Styles
+  Built on top of UIKit
+*/
+
+:root {
+    --loa-navy: #0a1a2a;
+    --loa-red: #f42535;
+    --loa-black: #111111;
+    --loa-gray-light: #f8f8f8;
+    --loa-gray-medium: #e5e5e5;
+    --loa-text: #333333;
+    --font-serif: "Georgia", "Times New Roman", serif;
+    --font-sans: "Inter", "Calibre", Helvetica, Arial, sans-serif;
+}
+
+body {
+    font-family: var(--font-sans);
+    color: var(--loa-text);
+    background-color: #fff;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .uk-h1, .uk-h2, .uk-h3, .uk-h4 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    color: var(--loa-black);
+}
+
+.uk-section-muted {
+    background-color: var(--loa-gray-light);
+}
+
+/* Premium Card Styling */
+.uk-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.uk-card-default {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.uk-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Button Overrides */
+.uk-button-primary {
+    background-color: var(--loa-red);
+    border-radius: 2px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.uk-button-primary:hover {
+    background-color: #d11d2b;
+}
+
+/* Alignment and Helpers */
+.text-serif { font-family: var(--font-serif); }
+.text-sans { font-family: var(--font-sans); }
+.color-loa-red { color: var(--loa-red); }
+
+/* Sticky Header Customization */
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--loa-gray-medium);
+}
