@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en-US" class="js-fonts-loaded">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - Library of America</title>
+  <meta name="description" content="Library of America champions the nation's greatest writers and preserves their timeless works.">
+
+  <!-- Stylesheets (local) -->
+  <link rel="stylesheet" href="assets/css/icons.css" media="all">
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css" media="all">
+  <link rel="stylesheet" href="assets/css/application.css" media="all">
+  <link rel="stylesheet" href="assets/css/icons(1).css" media="all">
+  <link rel="stylesheet" href="assets/css/style.css" media="all">
+  <link rel="stylesheet" href="assets/css/print.css" media="print">
+
+  <style>
+    button.no-button {
+      background: none;
+      border: none;
+    }
+    .wp-caption-text {
+      white-space: pre-wrap;
+      font-family: "Calibre", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 20px;
+      font-weight: 600;
+      padding-top: 15px;
+    }
+    @media screen and (max-width: 484px) {
+      .content-listing.content-listing--book .content-listing__img {
+        max-width: 100% !important;
+        max-height: auto;
+        height: auto !important;
+      }
+      .post-type-archive-volume .content-listing.content-listing--book > a {
+        display: flex;
+        height: 287.5px;
+        align-content: center;
+      }
+    }
+    span[style*="color: slategray;"] { display: block !important; }
+    .contact-us form input[type="submit"] {
+      width: 230px; height: 50px; margin-top: 60px;
+      margin-left: auto; margin-right: auto;
+      background-color: #f42535; border: none;
+      font-size: 16px; line-height: 25px; font-weight: 600;
+      letter-spacing: 0.025em; text-align: center;
+      cursor: pointer; display: block; padding: 12px 0 13px 0;
+      min-width: 100px; color: #fff; white-space: nowrap;
+      -webkit-appearance: none; transition-duration: 500ms;
+      font-family: "Calibre", Helvetica, Arial, sans-serif;
+    }
+    .support .support__copy-title, .support .support__call-out {
+      font-family: Times, Courier, serif !important;
+      font-size: 28px !important; font-weight: 500 !important;
+      line-height: 35px !important;
+    }
+    .hero__divider:last-child::before { content: none !important; }
+    .support .content-listing__date { display: none; }
+    .volume-content__header ul li span { font-size: 18px; }
+    .content-list--books.columns .content-listing__img { height: auto !important; }
+    @media (max-width: 1132px) and (min-width: 1024px) {
+      .site-search .icon.icon__search--white {
+        top: 23px; right: 23px; margin-top: 5px;
+      }
+    }
+    .site-footer__share-links a.icon__spotify--white { margin-top: 6px !important; }
+    .site-footer__share-links a.icon__youtube--white { margin-top: 6px !important; }
+  </style>
+
+  <!-- jQuery (local) -->
+  <script type="text/javascript" src="assets/js/jquery.min.js.descargar"></script>
+</head>
+
+<body class="home wp-singular page-template-default page page-id-7091 wp-theme-loa">
+
+<div id="a17">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="header" data-behavior="scroll_header open_menu">
+    <div class="header__branding" style="top: 49px;">
+      <a href="#" title="Home">
+        <span class="icon icon__logo--header" style="background-size: 100%;"></span>
+      </a>
+      <a href="#" title="Home" class="name" style="opacity: 1; display: block;">Library of America</a>
+    </div>
+    <div class="icon icon__hamburger--white"></div>
+
+    <section class="header__nav-container">
+      <nav class="header__menu--nav">
+        <ul class="header-menu">
+          <div class="menu-top-menu-left-container">
+            <ul id="menu-top-menu-left" class="primary-menu">
+              <li class="menu-item"><a href="#" class="link--white">Books</a></li>
+              <li class="menu-item"><a href="#" class="link--white">Writers</a></li>
+              <li class="menu-item"><a href="#" class="link--white">News &amp; Views</a></li>
+              <li class="menu-item"><a href="#" class="link--white">Subscribe</a></li>
+            </ul>
+          </div>
+        </ul>
+      </nav>
+
+      <nav class="header__menu--tools">
+        <ul class="header-menu">
+          <div class="menu-top-menu-right-container">
+            <ul id="menu-top-menu-right" class="secondary-menu">
+              <li class="menu-item"><a href="#" class="link--white">Join</a></li>
+              <li class="menu-item"><a href="#" class="link--white">Support</a></li>
+              <li class="menu-item"><a href="#" class="link--white">About</a></li>
+              <li class="menu-item"><a href="#" class="link--white">Sign In</a></li>
+              <li class="menu-item"><a href="#" class="link--white">Cart</a></li>
+            </ul>
+          </div>
+        </ul>
+      </nav>
+
+      <form class="site-search" id="searchform" action="#" autocomplete="off"
+            data-behavior="header_site_search" accept-charset="UTF-8" method="get">
+        <input type="text" class="site-search__field" name="keywords" id="searchInput" placeholder="Search...">
+        <span class="icon icon__search--white" id="open-search"></span>
+        <span class="icon icon__search--grey"></span>
+        <span class="icon icon__close--white"></span>
+        <span id="clear-input-val"> </span>
+        <div class="site-search__results-container" id="search-target-container" style="height: auto;">
+          <div id="searchPreview" class="site-search__results" style="visibility: visible;"></div>
+        </div>
+      </form>
+    </section>
+  </header>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <main id="content">
+
+    <div class="homepage">
+
+      <!-- Featured / News grid -->
+      <section class="columns columns--4x homepage__content-list">
+
+        <!-- Featured editorial (large) -->
+        <div class="homepage__featured-content col">
+          <div class="content-listing content-listing--editorial editorial-listing--featured col">
+            <a href="#">
+              <img width="560" height="420"
+                   src="assets/images/Forthcoming-Thumb-for-HP.jpg"
+                   class="content-listing__img wp-post-image"
+                   alt="Forthcoming Fall 2026"
+                   decoding="async" fetchpriority="high">
+              <div class="content-listing__meta">
+                <i class="content-listing__tag">News</i>
+                <p class="content-listing__title">
+                  <b>Forthcoming: Fall 2026</b>
+                </p>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Left column editorials -->
+        <div class="homepage-content__content--left col">
+          <div class="homepage-content__inner">
+
+            <div class="content-listing content-listing--editorial col">
+              <a href="#">
+                <img width="260" height="195"
+                     src="assets/images/LOA-LIVE-logo-1-260x195.png"
+                     class="content-listing__img wp-post-image" alt=""
+                     decoding="async">
+                <div class="content-listing__meta">
+                  <i class="content-listing__tag">Video</i>
+                  <b class="content-listing__title"><p>LOA LIVE: Online programs inspired by Library of America publications</p></b>
+                  <span class="content-listing__date">September 1, 2023</span>
+                </div>
+              </a>
+            </div>
+
+            <div class="content-listing content-listing--editorial col">
+              <a href="#">
+                <img width="260" height="195"
+                     src="assets/images/RSVP-for-a-free-virtual-screening-of-Look-See-A-Portrait-of-Wendell-Berry-1920-x-1005-px-260x195.jpg"
+                     class="content-listing__img wp-post-image"
+                     alt="Look &amp; See" decoding="async">
+                <div class="content-listing__meta">
+                  <i class="content-listing__tag">News | Video</i>
+                  <b class="content-listing__title"><p>A Look Inside <em>Look &amp; See: A Portrait of Wendell Berry</em> with Laura Dunn and Mary Berry</p></b>
+                  <span class="content-listing__date">February 27, 2026</span>
+                </div>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right column editorials -->
+        <div class="homepage-content__content--right col">
+          <div class="homepage-content__inner">
+
+            <div class="content-listing content-listing--editorial col">
+              <a href="#">
+                <img width="260" height="195"
+                     src="assets/images/Hirsch-course-thumb-260x195.jpg"
+                     class="content-listing__img wp-post-image"
+                     alt="Edward Hirsch" decoding="async">
+                <div class="content-listing__meta">
+                  <i class="content-listing__tag">News</i>
+                  <b class="content-listing__title"><p>Register Now: How to Read an American Poem, an online course with Edward Hirsch</p></b>
+                  <span class="content-listing__date">February 2, 2026</span>
+                </div>
+              </a>
+            </div>
+
+            <div class="content-listing content-listing--editorial col">
+              <a href="#">
+                <img width="260" height="195"
+                     src="assets/images/caffe-cino-1965-gossage-zoom-260x195.jpg"
+                     class="content-listing__img wp-post-image" alt=""
+                     decoding="async">
+                <div class="content-listing__meta">
+                  <i class="content-listing__tag">Story of the Week</i>
+                  <b class="content-listing__title"><p>&#8220;Something I&#8217;ll Tell You Tuesday,&#8221; John Guare</p></b>
+                  <span class="content-listing__date">February 5, 2026</span>
+                </div>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- New & Noteworthy Books -->
+      <section class="content-section__container homepage__books-container">
+        <h2>New &amp; Noteworthy</h2>
+
+        <section class="content-section content-list content-list--books columns columns--5x">
+
+          <div class="content-listing content-listing--book col">
+            <a href="#" class="loa-card">
+              <img width="210" height="330"
+                   src="assets/images/9781598538298.jpg"
+                   class="content-listing__img wp-post-image" alt=""
+                   decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#" class="loa-card">
+                <b class="content-listing__title">Ursula K. Le Guin's Book of Cats</b>
+              </a>
+            </div>
+          </div>
+
+          <div class="content-listing content-listing--book col">
+            <a href="#" class="loa-card">
+              <img width="210" height="288"
+                   src="assets/images/Annotated-Gatsby-e1762527488409.jpg"
+                   class="content-listing__img wp-post-image"
+                   alt="Annotated Great Gatsby" decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#" class="loa-card">
+                <b class="content-listing__title">F. Scott Fitzgerald: The Annotated Great Gatsby</b>
+              </a>
+            </div>
+          </div>
+
+          <div class="content-listing content-listing--book col">
+            <a href="#" class="loa-card">
+              <img width="210" height="328"
+                   src="assets/images/9781598538137.jpg"
+                   class="content-listing__img wp-post-image" alt=""
+                   decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#" class="loa-card">
+                <b class="content-listing__title">Sarah Ruden: I Am the Arrow: The Life &amp; Art of Sylvia Plath in Six Poems</b>
+              </a>
+            </div>
+          </div>
+
+          <div class="content-listing content-listing--book col">
+            <a href="#" class="loa-card">
+              <img width="210" height="330"
+                   src="assets/images/9781598538366.jpg"
+                   class="content-listing__img wp-post-image" alt=""
+                   decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#" class="loa-card">
+                <b class="content-listing__title">The Testimony of Henry Adams, Freedman: Hope, Terror, and Exodus in the Post-Civil War South</b>
+              </a>
+            </div>
+          </div>
+
+          <div class="content-listing content-listing--book col">
+            <a href="#" class="loa-card">
+              <img width="210" height="330"
+                   src="assets/images/9781598538274.jpg"
+                   class="content-listing__img wp-post-image" alt=""
+                   decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#" class="loa-card">
+                <b class="content-listing__title">Helen Vendler: Inhabit the Poem — Last Essays</b>
+              </a>
+            </div>
+          </div>
+
+        </section>
+      </section>
+
+      <!-- Featured Writers -->
+      <section class="content-section content-section__container homepage__writers-container">
+        <h2>Featured Writers</h2>
+
+        <!-- Main featured writer -->
+        <div class="homepage__featured-writer col">
+          <div class="content-listing content-listing--writer col">
+            <a href="#">
+              <img width="260" height="520"
+                   src="assets/images/Strong_for-writer-page-260x520.jpg"
+                   class="content-listing__img wp-post-image"
+                   alt="George Templeton Strong" decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#">
+                <i class="content-listing__tag">Writer of the Week</i>
+                <b class="content-listing__title">George Templeton Strong</b>
+                <div class="content-listing__description">
+                  &#8220;Strong left a record of mid-century New York that is unequaled, a record so sharp, so detailed, that any reader must conclude: &#8216;This was New York.&#8217;&#8221;—The New York Times
+                </div>
+              </a>
+              <a class="content-listing__learn-more" href="#">Learn more</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Other writers grid -->
+        <div class="col homepage__writer-list columns--4x">
+
+          <div class="content-listing content-listing--writer content-listing--condensed col">
+            <a href="#">
+              <img width="260" height="185"
+                   src="assets/images/carson_rachel_WD.jpg"
+                   class="content-listing__img wp-post-image" alt=""
+                   decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#"><b class="content-listing__title">Rachel Carson</b></a>
+              <a href="#" class="content-listing__learn-more">Learn more</a>
+            </div>
+          </div>
+
+          <div class="content-listing content-listing--writer content-listing--condensed col">
+            <a href="#">
+              <img width="260" height="185"
+                   src="assets/images/butler_octavia_WD.jpg"
+                   class="content-listing__img wp-post-image" alt=""
+                   decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#"><b class="content-listing__title">Octavia E. Butler</b></a>
+              <a href="#" class="content-listing__learn-more">Learn more</a>
+            </div>
+          </div>
+
+          <div class="content-listing content-listing--writer content-listing--condensed col">
+            <a href="#">
+              <img width="260" height="185"
+                   src="assets/images/london_jack_WD-1.jpg"
+                   class="content-listing__img wp-post-image" alt=""
+                   decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#"><b class="content-listing__title">Jack London</b></a>
+              <a href="#" class="content-listing__learn-more">Learn more</a>
+            </div>
+          </div>
+
+          <div class="content-listing content-listing--writer content-listing--condensed col">
+            <a href="#">
+              <img width="260" height="195"
+                   src="assets/images/Arendt-Writer-Page-260x195.png"
+                   class="content-listing__img wp-post-image"
+                   alt="Hannah Arendt" decoding="async">
+            </a>
+            <div class="content-listing__meta">
+              <a href="#"><b class="content-listing__title">Hannah Arendt</b></a>
+              <a href="#" class="content-listing__learn-more">Learn more</a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Featured Topics -->
+      <section class="content-section content-section__container homepage__topic-list">
+        <h2>Featured Topics</h2>
+        <div class="word-list">
+          <a href="#" class="word-list__word link--black">Books for Young Readers</a>
+          <a href="#" class="word-list__word link--black">The Founders</a>
+          <a href="#" class="word-list__word link--black">Hollywood</a>
+        </div>
+      </section>
+
+    </div><!-- /.homepage -->
+
+    <!-- About sub-footer -->
+    <div class="about-subfooter">
+      <a href="#" title="Home" class="icon icon__logo--footer"></a>
+      <a href="#" title="Home" class="about-subfooter__name">Library of America</a>
+      <div class="columns columns--3x">
+
+        <div class="about-subfooter__category category--curator col">
+          <b class="category__title">CURATOR</b>
+          <p class="category__description">
+            A champion of America's great writers and timeless works, Library of America guides readers
+            in finding and exploring the exceptional writing that reflects the nation's history and culture.
+          </p>
+          <span class="category__link"><a href="#" class="link--black">Learn More</a></span>
+        </div>
+
+        <div class="about-subfooter__category category--curator col">
+          <b class="category__title">PUBLISHER</b>
+          <p class="category__description">
+            From poetry, novels, and memoirs to journalism, crime writing, and science fiction, the more
+            than 300 volumes published by Library of America are widely recognized as America's literary canon.
+          </p>
+          <span class="category__link"><a href="#" class="link--black">Browse our books</a></span>
+          <span class="category__link"><a href="#" class="link--black">Subscribe</a></span>
+        </div>
+
+        <div class="about-subfooter__category category--curator col">
+          <b class="category__title">NON-PROFIT</b>
+          <p class="category__description">
+            With contributions from donors, Library of America preserves and celebrates a vital part
+            of our cultural heritage for generations to come.
+          </p>
+          <span class="category__link"><a href="#" class="link--black">Support our mission</a></span>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="footer-container">
+
+      <div class="site-footer__sign-up columns">
+        <div class="col">
+          <div class="newsletter-box">
+            <div class="box-label">
+              <b>Sign up for more from Library of America</b>
+              <span>Receive our newsletter, free Story of the Week, and more!</span>
+            </div>
+            <form action="#">
+              <div class="flex">
+                <input type="email" placeholder="Name@email.com">
+                <button class="footer-button">SIGN UP</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col">
+          <div class="catalog-box">
+            <span class="icon icon__logo--header"></span>
+            <b>Receive a free Library of America catalog</b>
+            <div>
+              <a href="#" class="footer-button">REQUEST A FREE CATALOG</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="site-footer__site-map columns columns--6x">
+        <nav class="site-footer__link-group col">
+          <a class="link--black" href="#">Books</a>
+          <ul class="site-footer__link-list">
+            <li><a class="link--dark-grey" href="#">Browse the Catalog</a></li>
+            <li><a class="link--dark-grey" href="#">LOA Series</a></li>
+            <li><a class="link--dark-grey" href="#">American Poets Project</a></li>
+            <li><a class="link--dark-grey" href="#">LOA eBook Classics</a></li>
+            <li><a class="link--dark-grey" href="#">Boxed Sets</a></li>
+          </ul>
+        </nav>
+
+        <nav class="col link-list--writers">
+          <a class="link--black" href="#">Writers</a>
+          <ul class="site-footer__link-list">
+            <li><a class="link--dark-grey" href="#">Browse the Roster</a></li>
+            <li><a class="link--dark-grey" href="#">Writer of the Week</a></li>
+          </ul>
+        </nav>
+
+        <nav class="col">
+          <a class="link--black" href="#">News &amp; Views</a>
+          <ul class="site-footer__link-list">
+            <li><a class="link--dark-grey" href="#">News</a></li>
+            <li><a class="link--dark-grey" href="#">Influences</a></li>
+            <li><a class="link--dark-grey" href="#">Interviews</a></li>
+            <li><a class="link--dark-grey" href="#">Video</a></li>
+            <li><a class="link--dark-grey" href="#">Audio</a></li>
+            <li><a class="link--dark-grey" href="#">Story of the Week</a></li>
+            <li><a class="link--dark-grey" href="#">The Moviegoer</a></li>
+            <li><a class="link--dark-grey" href="#">In the Community</a></li>
+          </ul>
+        </nav>
+
+        <nav class="col">
+          <a class="link--black" href="#">About</a>
+          <ul class="site-footer__link-list">
+            <li><a class="link--dark-grey" href="#">Mission</a></li>
+            <li><a class="link--dark-grey" href="#">LOA Editions</a></li>
+            <li><a class="link--dark-grey" href="#">LOA in the Community</a></li>
+            <li><a class="link--dark-grey" href="#">LOA in the Classroom</a></li>
+            <li><a class="link--dark-grey" href="#">People</a></li>
+            <li><a class="link--dark-grey" href="#">FAQs</a></li>
+          </ul>
+        </nav>
+
+        <nav class="col">
+          <a class="link--black" href="#">Subscribe</a>
+          <ul class="site-footer__link-list">
+            <li><a class="link--dark-grey" href="#">Current Offers</a></li>
+            <li><a class="link--dark-grey" href="#">FAQs</a></li>
+            <li><a class="link--dark-grey" href="#">How It Works</a></li>
+          </ul>
+        </nav>
+
+        <nav class="col">
+          <a class="link--black" href="#">Support</a>
+          <ul class="site-footer__link-list">
+            <li><a class="link--dark-grey" href="#">Annual Fund</a></li>
+            <li><a class="link--dark-grey" href="#">Project Support</a></li>
+            <li><a class="link--dark-grey" href="#">Guardians of American Letters</a></li>
+            <li><a class="link--dark-grey" href="#">Gift Sets</a></li>
+            <li><a class="link--dark-grey" href="#">Planned Giving</a></li>
+            <li><a class="link--dark-grey" href="#">Membership</a></li>
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+
+    <div class="site-footer__legal">
+      <div class="footer-container">
+        <nav class="site-footer__share-links">
+          <span>FOLLOW US</span><br>
+          <a target="_blank" href="#" class="icon icon__facebook--white"></a>
+          <a target="_blank" href="#" class="icon icon__instagram--white"></a>
+          <a target="_blank" href="#" class="icon icon__spotify--white"></a>
+          <a href="#" class="icon icon__youtube--white"></a>
+        </nav>
+
+        <nav class="site-footer__legal-links">
+          <ul class="site-footer__link-group--legal site-footer__link-list">
+            <li><a class="link--grey" href="#">Contact Us</a></li>
+            <li><a class="link--grey" href="#">Rights &amp; Permissions</a></li>
+            <li><a class="link--grey" href="#">Customer Service</a></li>
+            <li><a class="link--grey" href="#">Privacy Policy</a></li>
+            <li><a class="link--grey" href="#">Media Inquiries</a></li>
+          </ul>
+          <span class="site-footer__link-group--legal site-footer__copywrite">
+            &copy; Literary Classics of the United States, Inc.
+          </span>
+        </nav>
+      </div>
+    </div>
+
+  </footer>
+
+</div><!-- /#a17 -->
+
+<!-- Scripts (local) -->
+<script type="text/javascript" src="assets/js/application.js.descargar"></script>
+<script type="text/javascript" src="assets/js/ajax.js.descargar"></script>
+
+</body>
+</html>

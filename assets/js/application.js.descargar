@@ -1,0 +1,1464 @@
+! function() {
+    "use strict";
+    window.a17_slider = function(options) {
+        var this_instance_params, original_node, currentSliderPos, nextBtn, prevBtn, totalLi, maxSet, timer, slides, slidesWidths, totalWidth, xDown, yDown, xDiff, yDiff, animationFrame, defaults = {
+                sliderContainer: void 0,
+                sliderInner: void 0,
+                slideAmount: void 0,
+                paginator: void 0,
+                itemsVisible: 1,
+                scrollBySet: !1,
+                cloneAll: !1,
+                currentSet: 1,
+                budge: 0,
+                centered: !1,
+                looping: !0,
+                automate: !1,
+                interval: 5e3,
+                quickLinks: !0,
+                speed: 250,
+                quickLinksChar: "bull",
+                keyControls: !0,
+                swipable: !0,
+                swipeThreshold: 20
+            },
+            this_instance = this,
+            reset = !1,
+            hovering = !1,
+            sliderMoving = !1,
+            dragging = !1,
+            rtl = 0 != a17S("html[dir=rtl]", document).length,
+            dataAttr = "data-a17slider-position",
+            dupeAttr = "data-a17slider-dupe",
+            visible_class = "a17s_visible",
+            blank_item_class = "a17s_blank";
+
+        function a17S(s, c) {
+            var r = (c || this_instance_params.sliderContainer).querySelectorAll(s || "☺");
+            return 1 == r.length ? r[0] : r
+        }
+
+        function css(el, p, v) {
+            if ("object" != typeof p) return void 0 === v ? document.defaultView.getComputedStyle(el, null).getPropertyValue(p) : (el.style[p] = v, el);
+            for (var n in p) el.style[n] = p[n];
+            return this
+        }
+
+        function attr(el, a, v) {
+            return void 0 === v ? el.getAttribute(a) : (el.setAttribute(a, v), el)
+        }
+
+        function addClass(el, c) {
+            el.classList ? el.classList.add(c) : el.className += " " + c
+        }
+
+        function removeClass(el, c) {
+            el.classList ? el.classList.remove(c) : el.className = el.className.replace(new RegExp("(^|\\b)" + c.split(" ").join("|") + "(\\b|$)", "gi"), " ")
+        }
+
+        function hasClass(el, c) {
+            return el.classList ? el.classList.contains(c) : new RegExp("(^| )" + c + "( |$)", "gi").test(el.className)
+        }
+
+        function children(el) {
+            var nodes = el.childNodes,
+                nodes_arr = [];
+            return Array.prototype.forEach.call(nodes, function(node, i) {
+                1 === node.nodeType && nodes_arr.push(node)
+            }), nodes_arr
+        }
+
+        function trigger(type) {
+            var event = document.createEvent("HTMLEvents");
+            event.initEvent(type, !0, !0), event.data = {
+                container: this_instance_params.sliderContainer,
+                currentSet: this_instance_params.currentSet
+            }, event.eventName = type, this_instance_params.sliderContainer.dispatchEvent(event)
+        }
+
+        function updatePosition(pos) {
+            try {
+                window.cancelAnimationFrame(animationFrame)
+            } catch (err) {}
+            if (pos) {
+                var to = rtl ? -1 * pos : pos;
+                animationFrame = window.requestAnimationFrame(function() {
+                    writeLeftPos(to)
+                })
+            } else writeLeftPos(currentSliderPos)
+        }
+
+        function writeLeftPos(pos) {
+            css(this_instance_params.sliderInner, {
+                "-webkit-transform": "translateX(" + pos + "px)",
+                "-moz-transform": "translateX(" + pos + "px)",
+                "-ms-transform": "translateX(" + pos + "px)",
+                transform: "translateX(" + pos + "px)"
+            })
+        }
+
+        function moveSlider(direction) {
+            sliderMoving || (function(direction) {
+                "right" == direction ? (this_instance_params.centered && (currentSliderPos -= (this_instance_params.sliderContainer.offsetWidth - slidesWidths[this_instance_params.currentSet - 1]) / 2), "mixed" == this_instance_params.slideAmount ? currentSliderPos -= slidesWidths[this_instance_params.currentSet - 1] : currentSliderPos -= this_instance_params.slideAmount, this_instance_params.looping && this_instance_params.currentSet == maxSet ? (reset = !0, this_instance_params.currentSet = 1) : this_instance_params.currentSet++, this_instance_params.centered && (currentSliderPos += (this_instance_params.sliderContainer.offsetWidth - slidesWidths[this_instance_params.currentSet - 1]) / 2)) : "left" == direction ? (this_instance_params.centered && (currentSliderPos -= (this_instance_params.sliderContainer.offsetWidth - slidesWidths[this_instance_params.currentSet - 1]) / 2), this_instance_params.looping && 1 == this_instance_params.currentSet ? (reset = !0, this_instance_params.currentSet = maxSet) : this_instance_params.currentSet--, this_instance_params.centered && (currentSliderPos += (this_instance_params.sliderContainer.offsetWidth - slidesWidths[this_instance_params.currentSet - 1]) / 2), "mixed" == this_instance_params.slideAmount ? currentSliderPos += slidesWidths[this_instance_params.currentSet - 1] : currentSliderPos += this_instance_params.slideAmount) : (this_instance_params.currentSet = direction, currentSliderPos = calcCurrentSliderPos())
+            }(direction), sliderMoving = !0, Array.prototype.forEach.call(children(this_instance_params.sliderInner), function(slide, i) {
+                removeClass(slide, visible_class)
+            }), updatePosition(), setTimeout(function() {
+                reset && (currentSliderPos = calcCurrentSliderPos(), toggleTransitionClass("remove"), updatePosition(), toggleTransitionClass("add")), sliderMoving = !1, trigger("slider_moved"), hovering || auto()
+            }, this_instance_params.speed), trigger("slider_moving"), updatePaginator())
+        }
+
+        function calcCurrentSliderPos() {
+            for (var init_pos = 0, i = 0; i < this_instance_params.currentSet - 1; i++) init_pos += slidesWidths[i];
+            return this_instance_params.centered && (init_pos -= (this_instance_params.sliderContainer.offsetWidth - slidesWidths[this_instance_params.currentSet - 1]) / 2), this_instance_params.budge + -1 * init_pos
+        }
+
+        function updatePaginator() {
+            if (this_instance_params.looping || (addClass(prevBtn, "disabled"), addClass(nextBtn, "disabled"), 1 < this_instance_params.currentSet && removeClass(prevBtn, "disabled"), this_instance_params.scrollBySet ? o.currentSet < maxSet && removeClass(nextBtn, "disabled") : this_instance_params.currentSet + this_instance_params.itemsVisible < totalLi + 1 && removeClass(nextBtn, "disabled")), this_instance_params.quickLinks) {
+                try {
+                    removeClass(a17S("li.current", this_instance_params.paginator), "current")
+                } catch (err) {}
+                addClass(a17S("li:nth-child(" + this_instance_params.currentSet + ")", this_instance_params.paginator), "current")
+            }
+            for (var active_slides_search = "", i = 0; i < this_instance_params.itemsVisible; i++) 0 < i && (active_slides_search += ","), active_slides_search += "li[" + dataAttr + '="' + ((this_instance_params.currentSet - 1) * this_instance_params.itemsVisible + i) + '"]';
+            var active_slides = a17S(active_slides_search, this_instance_params.sliderInner);
+            void 0 === active_slides.length && (active_slides = [active_slides]), Array.prototype.forEach.call(active_slides, function(slide, i) {
+                addClass(slide, visible_class)
+            })
+        }
+
+        function auto() {
+            this_instance_params.automate && (clearTimeout(timer), timer = setTimeout(openNext, this_instance_params.interval))
+        }
+
+        function openNext() {
+            moveSlider("right")
+        }
+
+        function toggleTransitionClass(action) {
+            this_instance_params.sliderInner.offsetHeight;
+            ("add" === action ? addClass : removeClass)(this_instance_params.sliderInner, "a17s_transition");
+            this_instance_params.sliderInner.offsetHeight
+        }
+
+        function onDraggingStart() {
+            toggleTransitionClass("remove"), dragging = !0, clearTimeout(timer), hovering = !0, css(this_instance_params.sliderInner, "cursor", "-webkit-grabbing")
+        }
+
+        function onDragging(event, xUp, yUp) {
+            if (dragging) {
+                if (!xDown || !yDown) return;
+                if (xDiff = xDown - xUp, yDiff = yDown - yUp, !(Math.abs(xDiff) > Math.abs(yDiff))) return;
+                event.preventDefault(), 0 < xDiff ? (hasClass(nextBtn, "disabled") && (xDiff = rubberBand(xDiff)), updatePosition(currentSliderPos - xDiff)) : xDiff < 0 && (hasClass(prevBtn, "disabled") && (xDiff = rubberBand(xDiff)), updatePosition(currentSliderPos - xDiff))
+            }
+        }
+
+        function onDraggingEnd() {
+            if (dragging) {
+                if (dragging = !1, toggleTransitionClass("add"), css(this_instance_params.sliderInner, "cursor", "-webkit-grab"), !xDown || !yDown || void 0 === xDiff || void 0 === yDiff) return;
+                Math.abs(xDiff) > Math.abs(yDiff) && (Math.abs(xDiff) <= this_instance_params.swipeThreshold ? (updatePosition(), auto()) : xDiff > this_instance_params.swipeThreshold && !hasClass(nextBtn, "disabled") ? moveSlider("right") : xDiff < -1 * this_instance_params.swipeThreshold && !hasClass(prevBtn, "disabled") ? moveSlider("left") : (updatePosition(), auto())), yDiff = xDiff = yDown = xDown = void 0
+            }
+        }
+
+        function tabIndexMinus1(node) {
+            Array.prototype.forEach.call(node.querySelectorAll("a"), function(node, i) {
+                node.tabIndex = -1
+            })
+        }
+
+        function rubberBand(diff) {
+            return diff * (1 / (1 + Math.abs(diff) / 75))
+        }
+        return this_instance.move = function(direction) {
+                moveSlider(direction)
+            }, this_instance.currentSet = function() {
+                return defaults.currentSet
+            }, this_instance.destroy = function() {
+                this_instance_params.sliderContainer.innerHTML = original_node, delete this_instance.move, delete this_instance.currentSet, delete this_instance.destroy, trigger("slider_destroyed"), this_instance = null
+            },
+            function() {
+                for (var def in options = options || {}, this_instance_params = defaults) void 0 !== options[def] && (this_instance_params[def] = options[def]);
+                if (null != this_instance_params.sliderContainer && null != this_instance_params.sliderInner && null != this_instance_params.paginator) {
+                    var el, elements;
+                    if (original_node = this_instance_params.sliderContainer.innerHTML, currentSliderPos = 0, nextBtn = a17S("li.next a", this_instance_params.paginator), prevBtn = a17S("li.prev a", this_instance_params.paginator), el = this_instance_params.sliderInner, totalLi = children(el).length, maxSet = Math.ceil(totalLi / this_instance_params.itemsVisible), slides = children(this_instance_params.sliderInner), slidesWidths = [], Math.round(totalLi / 2), void(totalWidth = 0) === this_instance_params.slideAmount && (this_instance_params.slideAmount = this_instance_params.sliderContainer.offsetWidth), this_instance_params.automate && (this_instance_params.looping = !0), "mixed" == this_instance_params.slideAmount ? (this_instance_params.looping = !0, this_instance_params.cloneAll = !0, this_instance_params.itemsVisible = 1, this_instance_params.scrollBySet = !1) : this_instance_params.slideAmount < this_instance_params.sliderContainer.offsetWidth && (this_instance_params.cloneAll = !0, this_instance_params.looping = !0), this_instance_params.currentSet > maxSet && (this_instance_params.currentSet = 1), this_instance_params.scrollBySet && 1 === this_instance_params.itemsVisible && (this_instance_params.scrollBySet = !1), this_instance_params.interval = 1e3 * this_instance_params.interval, "mixed" == this_instance_params.slideAmount ? Array.prototype.forEach.call(slides, function(slide, i) {
+                            var width = +attr(slide, "width") || slide.offsetWidth;
+                            slidesWidths.push(width), totalWidth += width
+                        }) : (Array.prototype.forEach.call(slides, function(slide, i) {
+                            slidesWidths.push(this_instance_params.slideAmount)
+                        }), totalWidth = this_instance_params.scrollBySet ? this_instance_params.slideAmount * maxSet : this_instance_params.slideAmount * totalLi), Array.prototype.forEach.call(slides, function(node, i) {
+                            attr(node, dataAttr, i)
+                        }), this_instance_params.looping && 1 == this_instance_params.itemsVisible && totalLi > this_instance_params.itemsVisible && !this_instance_params.centered && !this_instance_params.cloneAll) {
+                        var first_child = a17S("li:first-child", this_instance_params.sliderInner).cloneNode(!0),
+                            last_child = a17S("li:last-child", this_instance_params.sliderInner).cloneNode(!0);
+                        attr(first_child, dupeAttr, ""), attr(last_child, dupeAttr, ""), tabIndexMinus1(first_child), tabIndexMinus1(last_child), this_instance_params.sliderInner.appendChild(first_child), this_instance_params.sliderInner.insertBefore(last_child, this_instance_params.sliderInner.firstChild), slides = children(this_instance_params.sliderInner), this_instance_params.budge = this_instance_params.budge - slidesWidths[0]
+                    } else if (this_instance_params.looping && totalLi > this_instance_params.itemsVisible || this_instance_params.centered || this_instance_params.cloneAll) {
+                        for (var i = 1; i <= this_instance_params.itemsVisible; i++) {
+                            if (0 < totalLi % this_instance_params.itemsVisible) {
+                                var $new_li = document.createElement("li");
+                                $new_li.className = blank_item_class, slides.push($new_li), totalLi = slides.length
+                            }
+                        }
+                        var firstSet = [],
+                            lastSet = [];
+                        Array.prototype.forEach.call(slides, function(node, i) {
+                            var node_dupe = node.cloneNode(!0);
+                            i < this_instance_params.itemsVisible && !this_instance_params.cloneAll && (attr(node_dupe, dupeAttr, ""), tabIndexMinus1(node_dupe), firstSet.push(node_dupe)), i >= totalLi - this_instance_params.itemsVisible && !this_instance_params.cloneAll && (attr(node_dupe, dupeAttr, ""), tabIndexMinus1(node_dupe), lastSet.push(node_dupe)), this_instance_params.cloneAll && (attr(node, dupeAttr, ""), tabIndexMinus1(node_dupe), firstSet.push(node_dupe), lastSet.push(node_dupe))
+                        }), slides = lastSet.concat(slides, firstSet);
+                        var new_slide_html = "";
+                        Array.prototype.forEach.call(slides, function(node, i) {
+                            new_slide_html += node.outerHTML
+                        }), this_instance_params.sliderInner.innerHTML = new_slide_html, slides = children(this_instance_params.sliderInner), this_instance_params.cloneAll ? this_instance_params.budge = this_instance_params.budge - totalWidth : this_instance_params.budge = this_instance_params.budge - slidesWidths[0]
+                    }
+                    elements = a17S("img[data-src]", this_instance_params.sliderInner), Array.prototype.forEach.call(elements, function(el, i) {
+                            var newImage = new Image,
+                                $this = el;
+                            newImage.onload = function() {
+                                0 == $this.css("opacity") && $this.css("opacity", "1")
+                            }, "" == $this.attr("src") && (newImage.src = $this.attr("data-src") || $this.attr("src"))
+                        }), currentSliderPos = calcCurrentSliderPos(), updatePosition(), toggleTransitionClass("add"), this_instance_params.swipable && css(this_instance_params.sliderInner, "cursor", "-webkit-grab"),
+                        function() {
+                            if (1 == this_instance_params.currentSet && 1 == maxSet) nextBtn.style.display = "none", prevBtn.style.display = "none", this_instance_params.paginator.style.display = "none";
+                            else {
+                                if (this_instance_params.quickLinks) {
+                                    for (var pages = "", loopUntil = this_instance_params.scrollBySet ? maxSet : totalLi, i = 0; i < loopUntil; i++) "bull" == this_instance_params.quickLinksChar ? pages += '<li><a href="#">&bull;</a></li>' : pages = pages + '<li><a href="#">' + (i + 1) + "</a></li>";
+                                    this_instance_params.paginator.innerHTML = pages + this_instance_params.paginator.innerHTML, nextBtn = a17S("li.next a", this_instance_params.paginator), prevBtn = a17S("li.prev a", this_instance_params.paginator)
+                                }
+                                updatePaginator(), timer = setTimeout(auto, 50)
+                            }
+                        }(),
+                        function() {
+                            if (1 == this_instance_params.currentSet && 1 == maxSet) return;
+                            if (prevBtn.addEventListener("click", function(event) {
+                                    event.preventDefault(), this_instance_params.looping ? moveSlider("left") : hasClass(this, "disabled") || moveSlider("left")
+                                }, !1), nextBtn.addEventListener("click", function(event) {
+                                    event.preventDefault(), this_instance_params.looping ? moveSlider("right") : hasClass(this, "disabled") || moveSlider("right")
+                                }, !1), this_instance_params.quickLinks) {
+                                var paginator_btns = a17S("li:not(.next):not(.prev) a", this_instance_params.paginator);
+                                Array.prototype.forEach.call(paginator_btns, function(a, i) {
+                                    a.addEventListener("click", function(event) {
+                                        event.preventDefault(), i < maxSet && !hasClass(this.parentNode, "current") && moveSlider(i + 1)
+                                    })
+                                })
+                            }
+                            this_instance_params.sliderContainer.addEventListener("mouseenter", function() {
+                                clearTimeout(timer), hovering = !0
+                            }, !1), this_instance_params.sliderContainer.addEventListener("mouseleave", function() {
+                                auto(), hovering = !1
+                            }, !1), this_instance_params.keyControls && (document.addEventListener("keydown", function(event) {
+                                switch (event.keyCode) {
+                                    case 37:
+                                        addClass(prevBtn, "active");
+                                        break;
+                                    case 39:
+                                        addClass(nextBtn, "active")
+                                }
+                            }, !1), document.addEventListener("keyup", function(event) {
+                                switch (event.keyCode) {
+                                    case 37:
+                                        removeClass(prevBtn, "active"), this_instance_params.looping ? moveSlider("left") : hasClass(prevBtn, "disabled") || moveSlider("left");
+                                        break;
+                                    case 39:
+                                        removeClass(nextBtn, "active"), this_instance_params.looping ? moveSlider("right") : hasClass(nextBtn, "disabled") || moveSlider("right")
+                                }
+                            }));
+                            this_instance_params.swipable && (this_instance_params.sliderInner.addEventListener("mousedown", function(event) {
+                                event.preventDefault(), xDown = document.all ? window.event.clientX : event.pageX, yDown = document.all ? window.event.clientY : event.pageY, onDraggingStart()
+                            }, !1), document.addEventListener("mousemove", function(event) {
+                                onDragging(event, document.all ? window.event.clientX : event.pageX, document.all ? window.event.clientY : event.pageY)
+                            }, !1), document.addEventListener("mouseup", function(event) {
+                                onDraggingEnd()
+                            }, !1), this_instance_params.sliderInner.addEventListener("touchstart", function(event) {
+                                xDown = event.touches[0].clientX, yDown = event.touches[0].clientY, onDraggingStart()
+                            }, !1), this_instance_params.sliderInner.addEventListener("touchmove", function(event) {
+                                onDragging(event, event.changedTouches[0].clientX, event.changedTouches[0].clientY)
+                            }), this_instance_params.sliderInner.addEventListener("touchend", function(event) {
+                                onDraggingEnd()
+                            }, !1));
+                            Array.prototype.forEach.call(slides, function(slide, i) {
+                                var slide_links = slide.querySelectorAll("a");
+                                Array.prototype.forEach.call(slide_links, function(link, i) {
+                                    link.addEventListener("focus", function(event) {
+                                        this_instance_params.sliderContainer.scrollLeft = 0, setTimeout(function() {
+                                            this_instance_params.sliderContainer.scrollLeft = 0
+                                        }, 0), clearTimeout(timer);
+                                        var position_focussed = parseInt(attr(slide, dataAttr)) || -1;
+                                        position_focussed && (1 < this_instance_params.itemsVisible && (position_focussed = Math.floor(position_focussed / this_instance_params.itemsVisible)), moveSlider(position_focussed + 1))
+                                    })
+                                })
+                            })
+                        }(), trigger("slider_setup_complete")
+                } else "object" == typeof console && console.warn("a17_slider: no sliderContainer, sliderInner or paginator specified")
+            }(), this_instance
+    }
+}(),
+function(win, doc) {
+    "use strict";
+
+    function FontFaceOnloadInstance() {
+        this.fontFamily = "", this.appended = !1, this.serif = void 0, this.sansSerif = void 0, this.parent = void 0, this.options = {}
+    }
+    var defaultOptions = {
+            tolerance: 2,
+            delay: 100,
+            glyphs: "",
+            success: function() {},
+            error: function() {},
+            timeout: 5e3,
+            weight: "400",
+            style: "normal"
+        },
+        style = ["display:block", "position:absolute", "top:-999px", "left:-999px", "font-size:48px", "width:auto", "height:auto", "line-height:normal", "margin:0", "padding:0", "font-variant:normal", "white-space:nowrap"],
+        html = '<div style="%s">AxmTYklsjo190QW</div>';
+    FontFaceOnloadInstance.prototype.getMeasurements = function() {
+        return {
+            sansSerif: {
+                width: this.sansSerif.offsetWidth,
+                height: this.sansSerif.offsetHeight
+            },
+            serif: {
+                width: this.serif.offsetWidth,
+                height: this.serif.offsetHeight
+            }
+        }
+    }, FontFaceOnloadInstance.prototype.load = function() {
+        var dimensions, startTime = new Date,
+            that = this,
+            serif = that.serif,
+            sansSerif = that.sansSerif,
+            parent = that.parent,
+            appended = that.appended,
+            options = that.options,
+            ref = options.reference;
+
+        function getStyle(family) {
+            return style.concat(["font-weight:" + options.weight, "font-style:" + options.style]).concat("font-family:" + family).join(";")
+        }
+        var sansSerifHtml = html.replace(/\%s/, getStyle("sans-serif")),
+            serifHtml = html.replace(/\%s/, getStyle("serif"));
+
+        function hasNewDimensions(dims, el, tolerance) {
+            return Math.abs(dims.width - el.offsetWidth) > tolerance || Math.abs(dims.height - el.offsetHeight) > tolerance
+        }(parent = parent || (that.parent = doc.createElement("div"))).innerHTML = sansSerifHtml + serifHtml, sansSerif = that.sansSerif = parent.firstChild, serif = that.serif = sansSerif.nextSibling, options.glyphs && (sansSerif.innerHTML += options.glyphs, serif.innerHTML += options.glyphs),
+            function checkDimensions() {
+                ref = ref || doc.body, !appended && ref && (ref.appendChild(parent), appended = that.appended = !0, dimensions = that.getMeasurements(), sansSerif.style.fontFamily = that.fontFamily + ", sans-serif", serif.style.fontFamily = that.fontFamily + ", serif"), appended && dimensions && (hasNewDimensions(dimensions.sansSerif, sansSerif, options.tolerance) || hasNewDimensions(dimensions.serif, serif, options.tolerance)) ? options.success() : (new Date).getTime() - startTime.getTime() > options.timeout ? options.error() : !appended && "requestAnimationFrame" in window ? win.requestAnimationFrame(checkDimensions) : win.setTimeout(checkDimensions, options.delay)
+            }()
+    }, FontFaceOnloadInstance.prototype.cleanFamilyName = function(family) {
+        return family.replace(/[\'\"]/g, "").toLowerCase()
+    }, FontFaceOnloadInstance.prototype.cleanWeight = function(weight) {
+        return "" + ({
+            normal: "400",
+            bold: "700"
+        }[weight] || weight)
+    }, FontFaceOnloadInstance.prototype.checkFontFaces = function(timeout) {
+        var _t = this;
+        doc.fonts.forEach(function(font) {
+            _t.cleanFamilyName(font.family) === _t.cleanFamilyName(_t.fontFamily) && _t.cleanWeight(font.weight) === _t.cleanWeight(_t.options.weight) && font.style === _t.options.style && font.load().then(function() {
+                _t.options.success(), win.clearTimeout(timeout)
+            })
+        })
+    }, FontFaceOnloadInstance.prototype.init = function(fontFamily, options) {
+        var timeout;
+        for (var j in defaultOptions) options.hasOwnProperty(j) || (options[j] = defaultOptions[j]);
+        this.options = options, this.fontFamily = fontFamily, !options.glyphs && "fonts" in doc ? (options.timeout && (timeout = win.setTimeout(function() {
+            options.error()
+        }, options.timeout)), this.checkFontFaces(timeout)) : this.load()
+    };
+    win.FontFaceOnload = function(fontFamily, options) {
+        var instance = new FontFaceOnloadInstance;
+        return instance.init(fontFamily, options), instance
+    }
+}(this, this.document), min$ = function() {
+        if (document.querySelectorAll, "addEventListener" in window && window.getComputedStyle && Object.keys) {
+            function each(arr, func) {
+                for (var arr_length = arr.length, i = 0; i < arr_length; i++) {
+                    if (!1 === func.call(arr[i], arr[i], i)) break
+                }
+                return arr
+            }
+            var event_uuid = 0,
+                events_cache = {};
+            return $.prototype = {
+                each: function(func) {
+                    return each(this, func)
+                },
+                on: function(type, fn) {
+                    return each(this, function(el) {
+                        event_uuid++, el.handlers || (el.handlers = {});
+                        var type_arr = type.split(".");
+                        el.handlers[event_uuid] = type, events_cache[event_uuid] = {
+                            type: type_arr[0],
+                            namespace: type_arr[1] || "",
+                            fn: fn
+                        }, el.addEventListener(type_arr[0], fn, !1)
+                    }), this
+                },
+                off: function(type) {
+                    return each(this, function(el) {
+                        var event_type, event_namespace, node = el,
+                            node_handlers = node.handlers || [],
+                            type_arr = void 0 === type ? [] : type.split(".");
+                        0 < type_arr.length && (event_type = type_arr[0] || "", event_namespace = type_arr[1] || ""), Object.keys(node_handlers).forEach(function(key) {
+                            (0 === type_arr.length || event_type === events_cache[key].type && event_namespace === events_cache[key].namespace || event_type === events_cache[key].type && "" === event_namespace || event_namespace === events_cache[key].namespace && "" === event_type) && (node.removeEventListener(events_cache[key].type, events_cache[key].fn, !1), delete node.handlers[key], delete events_cache[key])
+                        })
+                    }), this
+                },
+                trigger: function(type, data) {
+                    var event = document.createEvent("HTMLEvents");
+                    return event.initEvent(type, !0, !0), event.data = data || {}, event.eventName = type, each(this, function(el) {
+                        (event.target = el).dispatchEvent(event)
+                    }), this
+                },
+                addClass: function(className) {
+                    return each(this, function(el) {
+                        el.classList ? el.classList.add(className) : min$(el).hasClass(className) || (el.className += " " + className)
+                    }), this
+                },
+                removeClass: function(className) {
+                    return each(this, function(el) {
+                        el.classList ? el.classList.remove(className) : el.className = el.className.replace(new RegExp("(^|\\b)" + className.split(" ").join("|") + "(\\b|$)", "gi"), " ")
+                    }), this
+                },
+                hasClass: function(className) {
+                    var el = 0 < this.length ? this[0] : this;
+                    return valid(el) ? el.classList ? el.classList.contains(className) : new RegExp("(^| )" + className + "( |$)", "gi").test(el.className) : this
+                },
+                attr: function(a, v) {
+                    if (void 0 !== v) return each(this, function(el) {
+                        el.setAttribute(a, v)
+                    }), this;
+                    var el = 0 < this.length ? this[0] : this;
+                    return valid(el) ? el.getAttribute(a) : this
+                },
+                css: function(p, v) {
+                    if ("object" == typeof p) return each(this, function(el) {
+                        for (var n in p) p.hasOwnProperty(n) && (el.style[n] = p[n])
+                    }), this;
+                    if (void 0 !== v) return each(this, function(el) {
+                        el.style[p] = v
+                    }), this;
+                    var el = 0 < this.length ? this[0] : this;
+                    return valid(el) ? window.getComputedStyle(el, null).getPropertyValue(p) : this
+                },
+                index: function(item, show) {
+                    var n = -1;
+                    if (item) {
+                        if (void 0 === (item = 0 < item.length || item.addClass ? item[0] : item) || !valid(item)) return n
+                    } else item = this[0] || this;
+                    return each(this, function(el, i) {
+                        if (el === item) return n = i, !1
+                    }), n
+                }
+            }, min$.each = each, min$.prototype = $.prototype, min$
+        }
+
+        function $(elements) {
+            if (elements) {
+                this.length = elements.length;
+                for (var i = 0; i < this.length; i++) this[i] = elements[i]
+            }
+        }
+
+        function valid(node) {
+            return 1 === node.nodeType
+        }
+
+        function min$(selector, context) {
+            var nodes = [];
+            return selector && "string" != typeof selector ? nodes = selector.addClass ? selector : [selector] : selector && (nodes = (context || document).querySelectorAll(selector || "☺")), new $(nodes)
+        }
+    }(),
+    function(a) {
+        function m() {
+            d.setAttribute("content", g), h = !0
+        }
+        var b = navigator.userAgent;
+        if (/iPhone|iPad|iPod/.test(navigator.platform) && /OS [1-5]_[0-9_]* like Mac OS X/i.test(b) && -1 < b.indexOf("AppleWebKit")) {
+            var c = a.document;
+            if (c.querySelector) {
+                var i, j, k, l, d = c.querySelector("meta[name=viewport]"),
+                    e = d && d.getAttribute("content"),
+                    f = e + ",maximum-scale=1",
+                    g = e + ",maximum-scale=10",
+                    h = !0;
+                d && (a.addEventListener("orientationchange", m, !1), a.addEventListener("devicemotion", function(b) {
+                    l = b.accelerationIncludingGravity, i = Math.abs(l.x), j = Math.abs(l.y), k = Math.abs(l.z), a.orientation && 180 !== a.orientation || !(7 < i || (6 < k && j < 8 || k < 8 && 6 < j) && 5 < i) ? h || m() : h && (d.setAttribute("content", f), h = !1)
+                }, !1))
+            }
+        }
+    }(this), window.matchMedia || (window.matchMedia = function() {
+        "use strict";
+        var a = window.styleMedia || window.media;
+        if (!a) {
+            var d, b = document.createElement("style"),
+                c = document.getElementsByTagName("script")[0];
+            b.type = "text/css", b.id = "matchmediajs-test", c.parentNode.insertBefore(b, c), d = "getComputedStyle" in window && window.getComputedStyle(b, null) || b.currentStyle, a = {
+                matchMedium: function(a) {
+                    var c = "@media " + a + "{ #matchmediajs-test { width: 1px; } }";
+                    return b.styleSheet ? b.styleSheet.cssText = c : b.textContent = c, "1px" === d.width
+                }
+            }
+        }
+        return function(b) {
+            return {
+                matches: a.matchMedium(b || "all"),
+                media: b || "all"
+            }
+        }
+    }()),
+    function(a, b, c) {
+        "use strict";
+
+        function d(b) {
+            "object" == typeof module && "object" == typeof module.exports ? module.exports = b : "function" == typeof define && define.amd && define("picturefill", function() {
+                return b
+            }), "object" == typeof a && (a.picturefill = b)
+        }
+
+        function e(a) {
+            for (var b, c, d, e, f, i = a || {}, j = 0, k = (b = i.elements || g.getAllElements()).length; j < k; j++)
+                if (d = (c = b[j]).parentNode, f = e = void 0, "IMG" === c.nodeName.toUpperCase() && (c[g.ns] || (c[g.ns] = {}), i.reevaluate || !c[g.ns].evaluated)) {
+                    if (d && "PICTURE" === d.nodeName.toUpperCase()) {
+                        if (g.removeVideoShim(d), !1 === (e = g.getMatch(c, d))) continue
+                    } else e = void 0;
+                    (d && "PICTURE" === d.nodeName.toUpperCase() || !g.sizesSupported && c.srcset && h.test(c.srcset)) && g.dodgeSrcset(c), e ? (f = g.processSourceSet(e), g.applyBestCandidate(f, c)) : (f = g.processSourceSet(c), void 0 !== c.srcset && !c[g.ns].srcset || g.applyBestCandidate(f, c)), c[g.ns].evaluated = !0
+                }
+        }
+        if (a.HTMLPictureElement) d(function() {});
+        else {
+            b.createElement("picture");
+            var g = a.picturefill || {},
+                h = /\s+\+?\d+(e\d+)?w/;
+            g.ns = "picturefill", g.srcsetSupported = "srcset" in c, g.sizesSupported = "sizes" in c, g.curSrcSupported = "currentSrc" in c, g.trim = function(a) {
+                    return a.trim ? a.trim() : a.replace(/^\s+|\s+$/g, "")
+                }, g.makeUrl = function() {
+                    var a = b.createElement("a");
+                    return function(b) {
+                        return a.href = b, a.href
+                    }
+                }(), g.restrictsMixedContent = function() {
+                    return "https:" === a.location.protocol
+                }, g.matchesMedia = function(b) {
+                    return a.matchMedia && a.matchMedia(b).matches
+                }, g.getDpr = function() {
+                    return a.devicePixelRatio || 1
+                }, g.getWidthFromLength = function(a) {
+                    var c;
+                    if (!a || -1 < a.indexOf("%") != 0 || !(0 < parseFloat(a) || -1 < a.indexOf("calc("))) return !1;
+                    a = a.replace("vw", "%"), g.lengthEl || (g.lengthEl = b.createElement("div"), g.lengthEl.style.cssText = "border:0;display:block;font-size:1em;left:0;margin:0;padding:0;position:absolute;visibility:hidden", g.lengthEl.className = "helper-from-picturefill-js"), g.lengthEl.style.width = "0px";
+                    try {
+                        g.lengthEl.style.width = a
+                    } catch (d) {}
+                    return b.body.appendChild(g.lengthEl), (c = g.lengthEl.offsetWidth) <= 0 && (c = !1), b.body.removeChild(g.lengthEl), c
+                }, g.detectTypeSupport = function(b, c) {
+                    var d = new a.Image;
+                    return d.onerror = function() {
+                        g.types[b] = !1, e()
+                    }, d.onload = function() {
+                        g.types[b] = 1 === d.width, e()
+                    }, d.src = c, "pending"
+                }, g.types = g.types || {}, g.initTypeDetects = function() {
+                    g.types["image/jpeg"] = !0, g.types["image/gif"] = !0, g.types["image/png"] = !0, g.types["image/svg+xml"] = b.implementation.hasFeature("http://www.w3.org/TR/SVG11/feature#Image", "1.1"), g.types["image/webp"] = g.detectTypeSupport("image/webp", "data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=")
+                }, g.verifyTypeSupport = function(a) {
+                    var b = a.getAttribute("type");
+                    if (null === b || "" === b) return !0;
+                    var c = g.types[b];
+                    return "string" == typeof c && "pending" !== c ? (g.types[b] = g.detectTypeSupport(b, c), "pending") : "function" == typeof c ? (c(), "pending") : c
+                }, g.parseSize = function(a) {
+                    var b = /(\([^)]+\))?\s*(.+)/g.exec(a);
+                    return {
+                        media: b && b[1],
+                        length: b && b[2]
+                    }
+                }, g.findWidthFromSourceSize = function(c) {
+                    for (var d, e = g.trim(c).split(/\s*,\s*/), f = 0, h = e.length; f < h; f++) {
+                        var i = e[f],
+                            j = g.parseSize(i),
+                            k = j.length,
+                            l = j.media;
+                        if (k && (!l || g.matchesMedia(l)) && (d = g.getWidthFromLength(k))) break
+                    }
+                    return d || Math.max(a.innerWidth || 0, b.documentElement.clientWidth)
+                }, g.parseSrcset = function(a) {
+                    for (var b = [];
+                        "" !== a;) {
+                        var c, d = (a = a.replace(/^\s+/g, "")).search(/\s/g),
+                            e = null;
+                        if (-1 !== d) {
+                            if ("," !== (c = a.slice(0, d)).slice(-1) && "" !== c || (c = c.replace(/,+$/, ""), e = ""), a = a.slice(d + 1), null === e) {
+                                var g = a.indexOf(",");
+                                a = -1 !== g ? (e = a.slice(0, g), a.slice(g + 1)) : (e = a, "")
+                            }
+                        } else c = a, a = "";
+                        (c || e) && b.push({
+                            url: c,
+                            descriptor: e
+                        })
+                    }
+                    return b
+                }, g.parseDescriptor = function(a, b) {
+                    var c, d = b || "100vw",
+                        e = a && a.replace(/(^\s+|\s+$)/g, ""),
+                        f = g.findWidthFromSourceSize(d);
+                    if (e)
+                        for (var h = e.split(" "), i = h.length - 1; 0 <= i; i--) {
+                            var j = h[i],
+                                k = j && j.slice(j.length - 1);
+                            if ("h" !== k && "w" !== k || g.sizesSupported) {
+                                if ("x" === k) {
+                                    var l = j && parseFloat(j, 10);
+                                    c = l && !isNaN(l) ? l : 1
+                                }
+                            } else c = parseFloat(parseInt(j, 10) / f)
+                        }
+                    return c || 1
+                }, g.getCandidatesFromSourceSet = function(a, b) {
+                    for (var c = g.parseSrcset(a), d = [], e = 0, f = c.length; e < f; e++) {
+                        var h = c[e];
+                        d.push({
+                            url: h.url,
+                            resolution: g.parseDescriptor(h.descriptor, b)
+                        })
+                    }
+                    return d
+                }, g.dodgeSrcset = function(a) {
+                    a.srcset && (a[g.ns].srcset = a.srcset, a.srcset = "", a.setAttribute("data-pfsrcset", a[g.ns].srcset))
+                }, g.processSourceSet = function(a) {
+                    var b = a.getAttribute("srcset"),
+                        c = a.getAttribute("sizes"),
+                        d = [];
+                    return "IMG" === a.nodeName.toUpperCase() && a[g.ns] && a[g.ns].srcset && (b = a[g.ns].srcset), b && (d = g.getCandidatesFromSourceSet(b, c)), d
+                }, g.backfaceVisibilityFix = function(a) {
+                    var b = a.style || {},
+                        c = "webkitBackfaceVisibility" in b,
+                        d = b.zoom;
+                    c && (b.zoom = ".999", c = a.offsetWidth, b.zoom = d)
+                }, g.setIntrinsicSize = function() {
+                    function d(a, b, c) {
+                        b && a.setAttribute("width", parseInt(b / c, 10))
+                    }
+                    var c = {};
+                    return function(e, f) {
+                        var h;
+                        e[g.ns] && !a.pfStopIntrinsicSize && (void 0 === e[g.ns].dims && (e[g.ns].dims = e.getAttribute("width") || e.getAttribute("height")), e[g.ns].dims || (f.url in c ? d(e, c[f.url], f.resolution) : ((h = b.createElement("img")).onload = function() {
+                            if (c[f.url] = h.width, !c[f.url]) try {
+                                b.body.appendChild(h), c[f.url] = h.width || h.offsetWidth, b.body.removeChild(h)
+                            } catch (a) {}
+                            e.src === f.url && d(e, c[f.url], f.resolution), e = null, h.onload = null, h = null
+                        }, h.src = f.url)))
+                    }
+                }(), g.applyBestCandidate = function(a, b) {
+                    var c, d, e;
+                    a.sort(g.ascendingSort), e = a[(d = a.length) - 1];
+                    for (var f = 0; f < d; f++)
+                        if ((c = a[f]).resolution >= g.getDpr()) {
+                            e = c;
+                            break
+                        }
+                    e && (e.url = g.makeUrl(e.url), b.src !== e.url && (g.restrictsMixedContent() && "http:" === e.url.substr(0, "http:".length).toLowerCase() ? void 0 !== window.console && console.warn("Blocked mixed content image " + e.url) : (b.src = e.url, g.curSrcSupported || (b.currentSrc = b.src), g.backfaceVisibilityFix(b))), g.setIntrinsicSize(b, e))
+                }, g.ascendingSort = function(a, b) {
+                    return a.resolution - b.resolution
+                }, g.removeVideoShim = function(a) {
+                    var b = a.getElementsByTagName("video");
+                    if (b.length) {
+                        for (var c = b[0], d = c.getElementsByTagName("source"); d.length;) a.insertBefore(d[0], c);
+                        c.parentNode.removeChild(c)
+                    }
+                }, g.getAllElements = function() {
+                    for (var a = [], c = b.getElementsByTagName("img"), d = 0, e = c.length; d < e; d++) {
+                        var f = c[d];
+                        ("PICTURE" === f.parentNode.nodeName.toUpperCase() || null !== f.getAttribute("srcset") || f[g.ns] && null !== f[g.ns].srcset) && a.push(f)
+                    }
+                    return a
+                }, g.getMatch = function(a, b) {
+                    for (var c, d = b.childNodes, e = 0, f = d.length; e < f; e++) {
+                        var h = d[e];
+                        if (1 === h.nodeType) {
+                            if (h === a) return c;
+                            if ("SOURCE" === h.nodeName.toUpperCase()) {
+                                null !== h.getAttribute("src") && console.warn("The `src` attribute is invalid on `picture` `source` element; instead, use `srcset`.");
+                                var i = h.getAttribute("media");
+                                if (h.getAttribute("srcset") && (!i || g.matchesMedia(i))) {
+                                    var j = g.verifyTypeSupport(h);
+                                    if (!0 === j) {
+                                        c = h;
+                                        break
+                                    }
+                                    if ("pending" === j) return !1
+                                }
+                            }
+                        }
+                    }
+                    return c
+                },
+                function() {
+                    function c() {
+                        clearTimeout(d), d = setTimeout(h, 60)
+                    }
+
+                    function h() {
+                        e({
+                            reevaluate: !0
+                        })
+                    }
+                    g.initTypeDetects(), e();
+                    var d, f = setInterval(function() {
+                        return e(), /^loaded|^i|^c/.test(b.readyState) ? void clearInterval(f) : void 0
+                    }, 250);
+                    a.addEventListener ? a.addEventListener("resize", c, !1) : a.attachEvent && a.attachEvent("onresize", c)
+                }(), e._ = g, d(e)
+        }
+    }(window, window.document, new window.Image),
+    function() {
+        for (var lastTime = 0, vendors = ["ms", "moz", "webkit", "o"], x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"], window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"] || window[vendors[x] + "CancelRequestAnimationFrame"];
+        window.requestAnimationFrame || (window.requestAnimationFrame = function(callback, element) {
+            var currTime = (new Date).getTime(),
+                timeToCall = Math.max(0, 16 - (currTime - lastTime)),
+                id = window.setTimeout(function() {
+                    callback(currTime + timeToCall)
+                }, timeToCall);
+            return lastTime = currTime + timeToCall, id
+        }), window.cancelAnimationFrame || (window.cancelAnimationFrame = function(id) {
+            clearTimeout(id)
+        })
+    }();
+var A17 = window.A17 || {};
+A17.Behaviors = {}, A17.Helpers = {}, A17.media_query_in_use = "large", A17.LoadBehavior = function(context) {
+    void 0 === context && (context = document);
+    for (var all = context.querySelectorAll("[data-behavior]"), i = -1; all[++i];)
+        for (var currentElement = all[i], splitted_behaviors = currentElement.getAttribute("data-behavior").split(" "), j = 0, k = splitted_behaviors.length; j < k; j++) {
+            var thisBehavior = A17.Behaviors[splitted_behaviors[j]];
+            void 0 !== thisBehavior && thisBehavior.call(currentElement, currentElement)
+        }
+}, A17.onReady = function() {
+    var resize_timer;
+    window.$ = min$, A17.Helpers.font_observers(), A17.media_query_in_use = A17.Helpers.get_media_query_in_use(), A17.LoadBehavior(), A17.Helpers.check_if_transitionend_supported(), $(window).on("resize", function() {
+        clearTimeout(resize_timer), resize_timer = setTimeout(function() {
+            A17.Helpers.resized()
+        }, 200)
+    })
+}, document.addEventListener("DOMContentLoaded", function() {
+    A17.onReady()
+}), "undefined" == typeof console && (console = {
+    log: function() {}
+}), A17.Helpers.ajax_request = function(settings) {
+    var options = settings,
+        request = new XMLHttpRequest,
+        request_url = options.url;
+    if (options.query_string = "", void 0 !== options.data && (A17.Helpers.turn_object_to_queryString ? options.query_string = A17.Helpers.turn_object_to_queryString(options.data) : console.log("Missing: A17.Helpers.turn_object_to_queryString")), "POST" !== options.type && (request_url += options.query_string), request.open(options.type, request_url, !0), "POST" === options.type && request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"), request.setRequestHeader("X-Requested-With", "XMLHttpRequest"), void 0 !== options.requestHeaders && 0 < options.requestHeaders.length)
+        for (var i = 0; i < options.requestHeaders.length; i++) {
+            var header = options.requestHeaders[i].header,
+                value = options.requestHeaders[i].value;
+            void 0 !== header && void 0 !== value && request.setRequestHeader(header, value)
+        }
+    request.onload = function() {
+        200 <= request.status && request.status < 400 ? "function" === (typeof options.onSuccess).toLowerCase() && options.onSuccess.call(this, request.responseText, request.status) : (console.log("We reached our target server, but it returned an error: " + request.statusText), "function" === (typeof options.onError).toLowerCase() && options.onError.call(this, request.responseText, request.status))
+    }, request.onerror = function() {
+        console.log("There was a connection error of some sort"), "function" === (typeof options.onError).toLowerCase() && options.onError.call(this, request.responseText, request.status)
+    }, request.send("POST" === options.type ? options.query_string.replace("?", "") : "")
+}, A17.Helpers.cookie_create = function(name, value, days) {
+    var date, expires;
+    expires = days ? ((date = new Date).setTime(date.getTime() + 24 * days * 60 * 60 * 1e3), "; expires=" + date.toGMTString()) : "", document.cookie = name + "=" + value + expires + "; path=/"
+}, A17.Helpers.cookie_delete = function(name) {
+    name && A17.Helpers.cookie_create(name, "", -1)
+}, A17.Helpers.cookie_read = function(name) {
+    if (name) {
+        for (var nameEQ = name + "=", ca = document.cookie.split(";"), i = 0; i < ca.length; i++) {
+            for (var c = ca[i];
+                " " == c.charAt(0);) c = c.substring(1, c.length);
+            if (0 === c.indexOf(nameEQ)) return c.substring(nameEQ.length, c.length)
+        }
+        return null
+    }
+    return null
+}, A17.Helpers.font_observers = function() {
+    var fonts = [{
+            name: "Calibre",
+            weight: "500"
+        }, {
+            name: "Calibre",
+            weight: "600"
+        }, {
+            name: "Arnhem",
+            weight: "500"
+        }],
+        fonts_loaded = 0,
+        fonts_cookie = A17.Helpers.cookie_read("LOA_fonts_cookie") || "";
+
+    function font_loaded() {
+        ++fonts_loaded >= fonts.length && (window.document.documentElement.className += " js-fonts-loaded ", A17.Helpers.cookie_create("LOA_fonts_cookie", fonts.length, 1))
+    }
+    if (fonts_cookie && fonts_cookie === fonts.length.toString()) fonts_loaded = fonts_cookie, font_loaded();
+    else
+        for (var i = 0, l = fonts.length; i < l; i++) {
+            var font = fonts[i];
+            FontFaceOnload(font.name, {
+                success: font_loaded,
+                weight: font.weight,
+                timeout: 3e3,
+                error: fontLoadError
+            })
+        }
+
+    function fontLoadError() {
+        console.log("Error: the fonts either haven't been loaded or there was an issue confirming they were loaded")
+    }
+}, A17.Helpers.get_media_query_in_use = function() {
+    return window.opera ? parse(window.getComputedStyle(document.body, ":after").getPropertyValue("content")) || "large" : window.getComputedStyle && parse(window.getComputedStyle(document.head, null).getPropertyValue("font-family")) || "large";
+
+    function parse(str) {
+        return str.replace(/'/gi, "").replace(/"/gi, "")
+    }
+}, A17.Helpers.images_loaded = function(images, cb) {
+    for (var counter = 0, i = 0; i < images.length; i++) {
+        var el = images[i],
+            img = new Image;
+        img.onload = trigger, el.complete ? trigger() : img.src = el.src
+    }
+
+    function trigger() {
+        (counter += 1) === images.length && cb()
+    }
+}, A17.Helpers.resized = function() {
+    if (!A17.Helpers.get_media_query_in_use) return console.log("Missing: A17.Helpers.get_media_query_in_use"), !1;
+    var new_media_query = A17.Helpers.get_media_query_in_use();
+    A17.media_query_in_use != new_media_query && (A17.media_query_in_use = A17.Helpers.get_media_query_in_use(), $(document).trigger("media_query_updated")), $(document).trigger("resized")
+}, A17.Helpers.check_if_transitionend_supported = function() {
+    var transitions = {
+            transition: "transitionend",
+            WebkitTransition: "webkitTransitionEnd",
+            MozTransition: "transitionend",
+            OTransition: "otransitionend"
+        },
+        elem = document.createElement("div");
+    for (var t in transitions)
+        if (void 0 !== elem.style[t]) {
+            A17.transitionEnd = transitions[t];
+            break
+        }
+}, A17.Helpers.turn_object_to_queryString = function(obj) {
+    var query_string = "",
+        count = 0;
+    if (0 < Object.getOwnPropertyNames(obj).length)
+        for (var key in query_string = "?", obj) obj.hasOwnProperty(key) && (query_string += (0 < count ? "&" : "") + key + "=" + encodeURIComponent(obj[key]).replace(/[!'()]/g, escape).replace(/\*/g, "%2A").replace(/%2B/gi, "+"), count++);
+    return query_string
+}, A17.Helpers.window_is_small = function() {
+    var curMedia = A17.Helpers.get_media_query_in_use();
+    return "medium" === curMedia || "small" === curMedia
+}, A17.Behaviors.about_slider = function(container) {
+    var containerWidth, aboutSlider, current_i, slides;
+
+    function init() {
+        containerWidth = container.offsetWidth, slides = container.querySelectorAll("ul.slider > li"), Array.prototype.forEach.call(slides, function(slide) {
+            slide.style.width = containerWidth + "px"
+        }), aboutSlider = new a17_slider({
+            sliderContainer: container,
+            sliderInner: container.querySelectorAll("ul.slider")[0],
+            slideAmount: containerWidth,
+            paginator: container.querySelectorAll("ul.paginator")[0],
+            keyControls: !1,
+            automate: !0,
+            interval: 5,
+            quickLinksChar: null,
+            currentSet: current_i
+        })
+    }
+
+    function reinitSlider() {
+        aboutSlider.destroy(), init()
+    }
+    $(document).on("media_query_updated", reinitSlider).on("orientationchange", reinitSlider), $(container).on("slider_moved", function(event) {
+        current_i = event.data.currentSet
+    }), init()
+}, A17.Behaviors.accordion = function(drawer) {
+    var closeObjects = drawer.getAttribute("data-close-objects").split(" ");
+    $(drawer).on("click", function(event) {
+        {
+            if (event.stopPropagation(), "INPUT" === event.target.tagName) return;
+            $(drawer).hasClass("active") ? function() {
+                for (var i = 0; i < closeObjects.length; i++)
+                    if ($(event.target).hasClass(closeObjects[i]) || "self" === closeObjects[i]) return $(drawer).removeClass("active")
+            }() : $(drawer).addClass("active")
+        }
+    }), -1 < closeObjects.indexOf("document") && $(document).on("click", function() {
+        drawer && $(drawer).removeClass("active")
+    })
+}, A17.Behaviors.baseline_grid = function(el) {
+    var visible = !1;
+    $(el).on("click", function(event) {
+        event.preventDefault(), visible = visible ? !(el.nextElementSibling.className = "baseline_grid") : (el.nextElementSibling.className = "baseline_grid js-show", !0)
+    })
+}, A17.Behaviors.click_scroll = function(el) {
+    var targetId = el.getAttribute("data-scroll-target-id"),
+        targetTop = document.getElementById(targetId).offsetTop - 60;
+    $(el).on("click", function() {
+        window.scrollTo(0, targetTop)
+    })
+}, A17.Behaviors.discount_lightbox = function(container) {
+    var lightbox = container.querySelector(".lightbox");
+    var exitLightbox = container.querySelector("[data-lightbox-close]");
+    var active = false;
+    function open() {
+        active = true;
+        container.classList.remove("hidden");
+        container.classList.add("active");
+        resized();
+        $(exitLightbox).on("click", close);
+        $(document).on("resized", resized);
+    }
+    function close(event) {
+        active = false;
+        $(exitLightbox).off("click", close);
+        $(document).off("resized", resized);
+        $(document).off("touchstart", stopMobileScroll);
+        container.parentNode.removeChild(container);
+    }
+    function resized() {
+        if (active) {
+            if (A17.media_query_in_use === "small") {
+                $(lightbox).css("margin-top", null);
+                $(document).on("touchstart", stopMobileScroll);
+            } else {
+                $(lightbox).css("margin-top", lightbox.getBoundingClientRect().height * -.5 + "px");
+                $(document).off("touchstart", stopMobileScroll);
+            }
+        }
+    }
+    function stopMobileScroll(event) {
+        var scrollPos = window.scrollY || window.pageYOffset;
+        if (scrollPos !== 0 && !(event.target === exitLightbox || event.target.parentNode === exitLightbox)) {
+            event.preventDefault();
+            window.scrollTo(0, scrollPos);
+        }
+    }
+
+    var qs = location.searchParams || new URLSearchParams(location.search),
+        should_open = true;
+
+    if (qs.has('no_lightbox')) {
+        A17.Helpers.cookie_create('news_lightbox', 1, 30);
+        should_open = false;
+    } else if (A17.Helpers.cookie_read('news_lightbox') !== null) {
+        should_open = false;
+    }
+
+    if (should_open) {
+        A17.Helpers.cookie_create('news_lightbox', 1, 30);
+        open();
+    }
+}, A17.Behaviors.filter_menus = function(container) {
+    var $curActive, $currentHighlighted = $(".current", container),
+        header = $(".header")[0],
+        subheader = $(".page-subheader")[0],
+        $html = $("html");
+
+    function openMenu($filter) {
+        $currentHighlighted.removeClass("current"), $filter.addClass("active");
+        var maxHeight = window.innerHeight - header.offsetHeight - subheader.offsetHeight;
+        $(".filter-list", $filter[0]).css("max-height", maxHeight + "px"), $curActive = $filter, $html.addClass("stop-scrolling")
+    }
+
+    function closeMenu() {
+        $curActive && $currentHighlighted && ($curActive.removeClass("active"), $currentHighlighted.addClass("current"), $(".filter-list", $curActive[0]).css("max-height", "0"), $curActive = void 0, $html.removeClass("stop-scrolling"))
+    }
+    $(document).on("click", function(event) {
+        var $target = $(event.target.parentNode);
+        "LI" !== $target[0].tagName ? closeMenu() : $curActive ? $curActive && !$target.hasClass("active") ? (closeMenu(), openMenu($target)) : closeMenu() : openMenu($target)
+    })
+}, A17.Behaviors.footer_signup = function(input) {
+    $(input).on("keydown", function(event) {
+        if (13 === (event.keyCode || event.which)) {
+            var emailAddress = input.value;
+            window.location.href = input.getAttribute("data-url") + "?email=" + encodeURIComponent(emailAddress)
+        }
+    })
+}, A17.Behaviors.go_back = function(link) {
+    $(link).on("click", function(event) {
+        event.preventDefault(), window.history.length <= 2 ? window.location = $(link).attr("data-back-url") : window.history.back()
+    })
+}, A17.Behaviors.handle_discount_form = function(form) {
+    var $form = $(form),
+        prefix = form.getAttribute("data-name-prefix"),
+        errorUl = form.querySelectorAll(".form__error-list")[0],
+        submitting = !1,
+        token = $('meta[name="csrf-token"]').attr("content"),
+        $inputs = $("input, textarea, select", form),
+        url = $form.attr("data-url"),
+        confirmationMessage = document.querySelectorAll(".form__confirmation")[0],
+        button = form.querySelector('input[type="submit"].btn');
+    prefix = "" === prefix ? prefix : prefix + "_", $(form).on("submit", function(event) {
+        if (event.preventDefault(), submitting) return !1;
+        submitting = !0, $form.removeClass("form--errors"), $(".label--error").each(function(el) {
+            $(el).removeClass("label--error")
+        });
+        var dataObj, data = (dataObj = {}, $inputs.each(function(el) {
+            var inputType = $(el).attr("type");
+            "checkbox" === inputType ? dataObj[el.name] = el.checked : "radio" === inputType ? (void 0 === dataObj[el.name] && (dataObj[el.name] = ""), dataObj[el.name] = el.checked ? el.value : dataObj[el.name]) : "SELECT" === el.tagName && 0 !== el.selectedIndex ? dataObj[el.name] = el.options[el.selectedIndex].value : dataObj[el.name] = el.value
+        }), dataObj);
+        A17.Helpers.ajax_request({
+            url: url,
+            type: "POST",
+            data: data,
+            requestHeaders: [{
+                header: "X-CSRF-Token",
+                value: token
+            }],
+            onSuccess: function(data) {
+                JSON.parse(data);
+                $(".confirmation__text", confirmationMessage)[0].innerHTML = "Thank you for your interest in Library of America!", $(form).addClass("form--confirmed"), $(button).removeClass("btn--red"), $(button).addClass("btn--green"), $(button).attr("value", "Thank You"), $(button).attr("disabled", "disabled"), submitting = !1, window.scrollTo(0, 0)
+            },
+            onError: function(data) {
+                var dataErrors = JSON.parse(data),
+                    i = 0,
+                    errorListString = "";
+                for (var name in dataErrors.errors) dataErrors.errors.hasOwnProperty(name) && (("contact_reason" === name ? $(".dropdown__label") : $("label[for=" + prefix + name + "]")).addClass("label--error"), errorListString += "<li>" + dataErrors.errors_list[i] + "</li>", i++);
+                errorUl.innerHTML = errorListString, $form.addClass("form--errors"), submitting = !1, window.scrollTo(0, 0)
+            }
+        })
+    })
+}, A17.Behaviors.handle_form = function(form) {
+    var $form = $(form),
+        prefix = form.getAttribute("data-name-prefix"),
+        errorUl = form.querySelectorAll(".form__error-list")[0],
+        submitting = !1,
+        token = $('meta[name="csrf-token"]').attr("content"),
+        $inputs = $("input, textarea, select", form),
+        url = $form.attr("data-url"),
+        confirmationMessage = document.querySelectorAll(".form__confirmation")[0];
+    prefix = "" === prefix ? prefix : prefix + "_", $(form).on("submit", function(event) {
+        if (event.preventDefault(), submitting) return !1;
+        submitting = !0, $form.removeClass("form--errors"), $(".label--error").each(function(el) {
+            $(el).removeClass("label--error")
+        });
+        var data = function() {
+            var dataObj = {};
+            $inputs.each(function(el) {
+                var inputType = $(el).attr("type");
+                "checkbox" === inputType ? dataObj[el.name] = el.checked : "radio" === inputType ? (void 0 === dataObj[el.name] && (dataObj[el.name] = ""), dataObj[el.name] = el.checked ? el.value : dataObj[el.name]) : "SELECT" === el.tagName && 0 !== el.selectedIndex ? dataObj[el.name] = el.options[el.selectedIndex].value : dataObj[el.name] = el.value
+            }), 0 != window.grecaptcha.getResponse().length && (dataObj["g-recaptcha-response"] = window.grecaptcha.getResponse());
+            return dataObj
+        }();
+        A17.Helpers.ajax_request({
+            url: url,
+            type: "POST",
+            data: data,
+            requestHeaders: [{
+                header: "X-CSRF-Token",
+                value: token
+            }],
+            onSuccess: function(data) {
+                var dataSuccess = JSON.parse(data);
+                submitting = !1, null != dataSuccess.message ? ($(".confirmation__text", confirmationMessage)[0].innerHTML = dataSuccess.message, $(form).addClass("form--confirmed"), window.scrollTo(0, 0)) : null != dataSuccess.location && (window.location = dataSuccess.location)
+            },
+            onError: function(data) {
+                var dataErrors = JSON.parse(data),
+                    i = 0,
+                    errorListString = "";
+                for (var name in dataErrors.errors) dataErrors.errors.hasOwnProperty(name) && (("contact_reason" === name ? $(".dropdown__label") : $("label[for=" + prefix + name + "]")).addClass("label--error"), errorListString += "<li>" + dataErrors.errors_list[i] + "</li>", i++);
+                errorUl.innerHTML = errorListString, $form.addClass("form--errors"), submitting = !1, window.grecaptcha && grecaptcha.reset();
+                window.scrollTo(0, 0)
+            }
+        })
+    })
+}, A17.Behaviors.header_site_search = function(form) {
+    var results, resultOptions, keyCode, token = $('meta[name="csrf-token"]').attr("content"),
+        input = form.querySelectorAll(".site-search__field")[0],
+        searchIconWhite = form.querySelectorAll(".icon.icon__search--white")[0],
+        searchIconGrey = form.querySelectorAll(".icon.icon__search--grey")[0],
+        searchClose = form.querySelectorAll(".icon.icon__close--white")[0],
+        resultsContainer = form.querySelectorAll(".site-search__results-container")[0],
+        url = form.getAttribute("data-search-url"),
+        queryString = "",
+        curFocusedIndex = -1;
+
+    function updateResults(data) {
+        // var tagName, className, el;
+        // resetResultsContainerSize(), curFocusedIndex = -1, results && resultsContainer.removeChild(results), tagName = "div", className = "site-search__results", (el = document.createElement(tagName)).className = className, (results = el).innerHTML = data, resultOptions = results.querySelectorAll("a");
+        // var resultsHeight = results.offsetHeight + 20;
+        // $(resultsContainer).css("height", resultsHeight + "px"), $(results).css("visibility", "visible")
+    }
+
+    function resetResultsContainerSize() {
+        // $(resultsContainer).css("height", "0")
+    }
+    $(searchIconWhite).on("click", function() {
+        "" === input.value && ("small" === A17.media_query_in_use && $(".header").addClass("header--search"), $(input).addClass("focus"), input.focus())
+    }), $(input).on("keyup", function() {
+        var query;
+        // queryString = this.value, 40 !== keyCode && 38 !== keyCode && (2 < queryString.length ? (query = queryString, A17.Helpers.ajax_request({
+        //     url: '',
+        //     type: "GET",
+        //     requestHeaders: [{
+        //         header: "X-Requested-With",
+        //         value: "XMLHttpRequest"
+        //     }, {
+        //         header: "X-CSRF-Token",
+        //         value: token
+        //     }],
+        //     data: {
+        //         query: query
+        //     },
+        //     onSuccess: updateResults,
+        //     onError: function(data) {
+        //         console.log('onError---', data);
+        //         updateResults(data);
+        //     }
+        // })) : resetResultsContainerSize())
+    }), $(input).on("keydown", function(event) {
+        keyCode = event.which || event.keyCode, -1 < curFocusedIndex && $(resultOptions.item(curFocusedIndex)).removeClass("hover"), 13 === keyCode && "" === queryString ? event.preventDefault() : 13 === keyCode && 0 <= curFocusedIndex ? (event.preventDefault(), window.location.href = resultOptions.item(curFocusedIndex).getAttribute("href")) : 40 === keyCode ? curFocusedIndex += curFocusedIndex === resultOptions.length - 1 ? 0 : 1 : 38 === keyCode && (curFocusedIndex -= -1 === curFocusedIndex ? 0 : 1), resultOptions && $(resultOptions.item(curFocusedIndex)).addClass("hover")
+    }), $(form).on("mousedown", function(event) {
+        var searchUrl = event.target.getAttribute("href");
+        searchUrl ? window.location.href = searchUrl : event.target === searchIconGrey && "" !== queryString && (window.location.href = url + "?query=" + queryString)
+    }), $(searchClose).on("click", function() {
+        console.log("hji"), $(resultsContainer).addClass("js-hidden"), resetResultsContainerSize(), input.value = "", queryString = "", $(".header").addClass("header--search") && $(".header").removeClass("header--search");
+        $(input).removeClass("focus"), window.setTimeout(function() {
+            $(resultsContainer).addClass("js-hidden");
+            $(resultsContainer).removeClass("show");
+            $('#searchPreview').empty();
+        }, 300)
+    })
+}, A17.Behaviors.lightbox = function(container) {
+    var lightboxContainer, lightbox, exitLightbox, newImg, lightboxFigure, isWide, lightboxHTML = '<div class="lightbox"><div class="lightbox__close"><span class="icon icon__close--black"></span></div>{{listing}}</div>';
+
+    function buildLightbox(contentEl) {
+        if (lightboxContainer.innerHTML = lightboxHTML.replace("{{listing}}", contentEl.outerHTML), container.appendChild(lightboxContainer), $(lightboxContainer).addClass("lightbox__container"), lightbox = lightboxContainer.querySelectorAll(".lightbox")[0], exitLightbox = lightbox.querySelectorAll(".lightbox__close")[0], lightboxFigure && !isWide && $(lightbox).addClass("lightbox--tall"), "small" !== A17.media_query_in_use) {
+            var adjust = $(contentEl).hasClass("news-article__figure") ? $("img", contentEl)[0].height + 100 : lightbox.offsetHeight;
+            $(lightbox).css("margin-top", -.5 * adjust + "px")
+        }! function() {
+            $(lightboxContainer).addClass("active"), "small" === A17.media_query_in_use && $(document).on("touchstart", stopMobileScroll);
+            $(lightboxContainer).on("click", closeLightBox)
+        }()
+    }
+
+    function stopMobileScroll(event) {
+        var scrollPos = window.scrollY || window.pageYOffset;
+        0 !== scrollPos && event.target !== exitLightbox && event.target.parentNode !== exitLightbox && (event.preventDefault(), window.scrollTo(0, scrollPos))
+    }
+
+    function closeLightBox(event) {
+        event.target !== lightboxContainer && event.target !== exitLightbox && event.target.parentNode !== exitLightbox || ($(this).removeClass("active"), container.removeChild(lightboxContainer), "small" === A17.media_query_in_use && $(document).off("touchstart"))
+    }
+    $("[data-open-lightbox]", container).on("click", function(event) {
+        event.preventDefault(), event.stopImmediatePropagation();
+        if (lightboxContainer = document.createElement("div"), this.hasAttribute("data-srcset-wide")) {
+            this.height, this.width;
+            ! function(img) {
+                var srcsetAttr, sizesAttr;
+                (newImg = new Image).onload = function() {
+                    $(document).trigger("new-img-loaded")
+                }, img.width >= img.height ? (srcsetAttr = "data-srcset-wide", sizesAttr = "data-sizes-wide", isWide = !0) : sizesAttr = img.hasAttribute("data-srcset-tall") ? (srcsetAttr = "data-srcset-tall", "data-sizes-tall") : (srcsetAttr = "srcset", "sizes");
+                var srcset = img.getAttribute(srcsetAttr);
+                newImg.setAttribute("sizes", img.getAttribute(sizesAttr)), newImg.srcset = srcset, newImg.src = srcset.match(/(.+)\d\s/)[0]
+            }(this)
+        } else buildLightbox(event.target.offsetParent)
+    }), $(document).on("new-img-loaded", function() {
+        lightboxFigure = document.createElement("figure"), $(lightboxFigure).addClass("news-article__figure"), lightboxFigure.appendChild(newImg), buildLightbox(lightboxFigure)
+    })
+}, A17.Behaviors.open_menu = function(header) {
+    var scrollPos, hamburger = header.querySelectorAll(".icon.icon__hamburger--white")[0];
+    $(window).on("resized", function() {
+        "small" !== A17.media_query_in_use && $("html").hasClass("open-menu") && $("html").removeClass("open-menu")
+    }), $(hamburger).on("click", function() {
+        $("html").hasClass("open-menu") ? ($("html").removeClass("open-menu"), window.scrollTo(0, scrollPos), A17.Behaviors.scroll_header(header)) : (scrollPos = window.scrollY || window.pageYOffset, header.setAttribute("style", ""), $("html").addClass("open-menu"))
+    })
+}, A17.Behaviors.pinboard = function(container) {
+    var blocks, colCount, colWidth = 260,
+        margin = 40,
+        colInfo = {
+            xlarge: {
+                columns: 3,
+                width: 260
+            },
+            large: {
+                columns: 3,
+                width: 200
+            },
+            medium: {
+                columns: 3,
+                width: 147
+            },
+            small: {
+                columns: 1
+            }
+        };
+
+    function init() {
+        ! function() {
+            var cur_media_query = A17.Helpers.get_media_query_in_use();
+            if ("small" !== cur_media_query) {
+                var thisColInfo = colInfo[cur_media_query];
+                colCount = thisColInfo.columns, colWidth = thisColInfo.width, window.innerWidth, blocks = [];
+                for (var i = 0; i < colCount; i++) blocks.push(0);
+                $(".content-listing--editorial").each(function(listing, idx) {
+                    var array, min = (array = blocks, Math.min.apply(Math, array)),
+                        index = blocks.indexOf(min),
+                        leftPos = index * (colWidth + margin);
+                    $(this).css("height", "auto");
+                    var height = this.offsetHeight;
+                    $(this).css({
+                        left: leftPos + "px",
+                        top: min + "px",
+                        height: height + "px"
+                    }), blocks[index] = min + height, 0 !== idx || $(container).hasClass("news-landing__pinboard--writer") || (blocks[index + 1] = min + height)
+                }), $(container).css("height", function(array) {
+                    return Math.max.apply(Math, array)
+                }(blocks) + 120 + "px")
+            } else $(".content-listing--editorial.col").each(function() {
+                this.setAttribute("style", ""), container.setAttribute("style", "")
+            })
+        }(), $(container).removeClass("pinboard--loading")
+    }
+    A17.Helpers.images_loaded($("img", container), init), $(window).on("resized", init)
+}, A17.Behaviors.place_excerpt = function(container) {
+    var paras = container.querySelectorAll("." + container.className.split(" ").join(".") + " > p"),
+        target = container.querySelectorAll("[data-placement-target]")[0];
+    1 < paras.length && target && (target = container.removeChild(target), container.insertBefore(target, paras[1]))
+}, A17.Behaviors.prescroll_subheader = function(container) {
+    var gutter, maxLeft, waitTimer, maxScroll, innerOptionListWidth, curActiveTab = container.querySelectorAll("li.active")[0],
+        optionList = container.querySelectorAll(".page-subheader__options")[0],
+        children = optionList.querySelectorAll("li:not(.page-subheader__clear)"),
+        innerWindowWidth = window.innerWidth,
+        curScroll = 0,
+        widthsAndLefts = [];
+
+    function childrenIndex(tab) {
+        return Array.prototype.indexOf.call(children, tab)
+    }
+    A17.Helpers.window_is_small() && (waitTimer = window.setInterval(function() {
+        if ($("html").hasClass("js-fonts-loaded")) {
+            window.clearInterval(waitTimer), widthsAndLefts.push({
+                width: children[0].offsetWidth,
+                left: gutter
+            });
+            for (var i = 1; i < children.length; i++) {
+                var lastObj = widthsAndLefts.slice(-1)[0],
+                    leftVal = lastObj.left + lastObj.width;
+                widthsAndLefts.push({
+                    width: children[i].offsetWidth,
+                    left: leftVal
+                })
+            }
+            curActiveIndex = childrenIndex(curActiveTab), innerOptionListWidth = optionList.scrollWidth, maxScroll = innerOptionListWidth - innerWindowWidth, maxLeft = innerWindowWidth - gutter,
+                function() {
+                    if (function(tab) {
+                            var tabInfo = widthsAndLefts[childrenIndex(tab)];
+                            return tabInfo.left + tabInfo.width > curScroll + maxLeft + 1 || tabInfo.left < curScroll
+                        }(curActiveTab)) {
+                        var scrollVal = function(idx) {
+                            var curTabInfo = widthsAndLefts[idx];
+                            return curTabInfo.left - (innerWindowWidth - curTabInfo.width) / 2
+                        }(curActiveIndex);
+                        curScroll = maxScroll < scrollVal ? maxScroll : scrollVal, optionList.scrollLeft = curScroll
+                    }
+                }(), $(optionList).on("touchstart", function() {
+                    var checkInterval = window.setInterval(function() {
+                        curScroll = optionList.scrollLeft, checkArrows()
+                    }, 100);
+                    $(this).on("touchend", function() {
+                        setTimeout(function() {
+                            clearInterval(checkInterval), curScroll = optionList.scrollLeft
+                        }, 500)
+                    })
+                })
+        }
+    }, 50)), gutter = "small" === A17.media_query_in_use ? 20 : Math.round((innerWindowWidth - 710) / 2)
+}, A17.Behaviors.print = function(link) {
+    $(link).on("click", function(event) {
+        event.preventDefault(), window.print()
+    })
+}, A17.Behaviors.scroll_header = function(header) {
+    var isDetailSubHeader, withinScrollBounds, animationFrame, cssVals, brandingEl = header.querySelectorAll(".header__branding")[0],
+        logoEl = header.querySelectorAll(".icon.icon__logo--header")[0],
+        nameEl = header.querySelectorAll(".name")[0],
+        subHeader = header.parentNode.querySelectorAll("[data-sub-header]")[0],
+        headerIsMin = !1,
+        desktopScrollDistance = 70,
+        scrollPos = window.scrollY || window.pageYOffset,
+        scrollDist = -1 < ["medium", "small", "header_break"].indexOf(A17.media_query_in_use) ? 0 : desktopScrollDistance,
+        $header = $(header),
+        $subHeader = $(subHeader),
+        $brandingEl = $(brandingEl),
+        $logoEl = $(logoEl),
+        $nameEl = $(nameEl);
+
+    function handleScroll(e) {
+        e && "touchmove" === e.type && (withinScrollBounds && headerIsMin || !withinScrollBounds && !headerIsMin) || $("html").hasClass("open-menu") || (scrollPos = window.scrollY || window.pageYOffset, withinScrollBounds = !0, scrollDist < scrollPos ? withinScrollBounds = !1 : scrollDist === desktopScrollDistance && cssVals.forEach(updateNodeIfChanged), withinScrollBounds && headerIsMin ? ($header.removeClass("header--min"), headerIsMin = !1) : withinScrollBounds || headerIsMin || ($header.addClass("header--min"), headerIsMin = !0), subHeader && updateSubheader(withinScrollBounds), e instanceof Event ? animationFrame && (cancelAnimationFrame(animationFrame), animationFrame = void 0) : animationFrame = window.requestAnimationFrame(handleScroll))
+    }
+
+    function scrollVal(start, deltaDistance, unit) {
+        var val = start - scrollPos * (deltaDistance / desktopScrollDistance);
+        return Math.round(val) + unit
+    }
+
+    function updateNodeIfChanged(nodeInfoObj) {
+        var newVal = nodeInfoObj.args ? nodeInfoObj.func.apply(this, nodeInfoObj.args) : nodeInfoObj.func.call();
+        newVal !== nodeInfoObj.curVal && (nodeInfoObj.node.css(nodeInfoObj.rule, newVal), nodeInfoObj.curVal = newVal)
+    }
+
+    function updateSubheader(lessThanScrollDistance) {
+        lessThanScrollDistance ? $subHeader.removeClass("page-subheader--fixed") : $subHeader.addClass("page-subheader--fixed"), isDetailSubHeader && (561 < scrollPos ? $subHeader.addClass("page-subheader--front") : $subHeader.removeClass("page-subheader--front"))
+    }
+
+    function calcVals() {
+        cssVals = [{
+            node: $nameEl,
+            rule: "opacity",
+            func: scrollVal,
+            args: [1, 28, ""]
+        }, {
+            node: $nameEl,
+            rule: "display",
+            func: function() {
+                return "block"
+            }
+        }, {
+            node: $logoEl,
+            rule: "background-size",
+            func: scrollVal,
+            args: "large" === A17.media_query_in_use ? [100, 0, "%"] : [100, 40, "%"]
+        }, {
+            node: $brandingEl,
+            rule: "top",
+            func: scrollVal,
+            args: "large" === A17.media_query_in_use ? [49, -38, "px"] : [21, -59, "px"]
+        }]
+    }
+    calcVals(), isDetailSubHeader = !(!subHeader || !subHeader.hasAttribute("data-detail")), scrollDist < scrollPos && updateSubheader(!1), $(document).on("resized", function() {
+        scrollDist = -1 < ["medium", "small", "header_break"].indexOf(A17.Helpers.get_media_query_in_use()) ? 0 : desktopScrollDistance, calcVals()
+    }), A17.touch && 0 === scrollDist ? $(window).on("touchmove", handleScroll).on("touchend", function() {
+        handleScroll()
+    }) : handleScroll()
+}, A17.Behaviors.scroll_if_filtered = function() {
+    "" !== window.location.search && window.scrollTo(0, $(".browse-results")[0].offsetTop - 100)
+}, A17.Behaviors.share_menu = function(el) {
+    var social_window_ref, share_list = el.querySelectorAll(".share__list")[0],
+        fb_link = el.querySelector("[data-social-sharing-facebook]"),
+        tw_link = el.querySelector("[data-social-sharing-twitter]"),
+        goog_link = el.querySelector("[data-social-sharing-googleplus]");
+
+    function closeMenu() {
+        $(share_list).removeClass("open"), $(share_list).on(A17.transitionEnd, function() {
+            $(el).removeClass("active"), $(this).off(A17.transitionEnd)
+        })
+    }
+
+    function openWindow(url, options) {
+        var width = (options = options || {}).width || 575,
+            height = options.height || 400,
+            left = (window.outerWidth - width) / 2,
+            opts = "status=1,width=" + width + ",height=" + height + ",top=" + (window.outerHeight - height) / 2 + ",left=" + left;
+        social_window_ref && !social_window_ref.closed && social_window_ref.close(), social_window_ref = window.open(url, "DH", opts), closeMenu()
+    }
+    $(el).on("click", function(event) {
+        event.stopPropagation(), $(el).hasClass("active") || ($(el).addClass("active"), $(el).on(A17.transitionEnd, function() {
+            $(share_list).addClass("open"), $(this).off(A17.transitionEnd)
+        }))
+    }), $(document).on("click", function() {
+        $(el).hasClass("active") && closeMenu()
+    }), $(".icon__close--white", el).on("click", closeMenu), null !== fb_link && fb_link.addEventListener("click", function(ev) {
+        ev.preventDefault(), openWindow("https://www.facebook.com/sharer/sharer.php?u=" + window.encodeURIComponent(window.location))
+    }), null !== tw_link && tw_link.addEventListener("click", function(ev) {
+        ev.preventDefault(), openWindow("https://twitter.com/intent/tweet?url=" + window.encodeURIComponent(window.location) + "&related=libraryofamerica", {
+            height: 253
+        })
+    }), null !== goog_link && goog_link.addEventListener("click", function(ev) {
+        ev.preventDefault(), openWindow("https://plus.google.com/share?url=" + window.encodeURIComponent(window.location), {
+            width: 515,
+            height: 505
+        })
+    })
+}, A17.Behaviors.show_selected = function(container) {
+    var textTarget = document.getElementById("text-target");
+    $("input", container).on("change", function(event) {
+        textTarget.textContent = event.target.value, $(container).addClass("dropdown--selected")
+    })
+}, A17.Behaviors.vertical_grid = function(el) {
+    var colCount = el.getAttribute("data-col-count"),
+        visible = !1;
+    $(el).on("click", function(event) {
+        event.preventDefault(), visible = visible ? (el.nextElementSibling.className = "vertical_grid--" + colCount, !1) : (el.nextElementSibling.className = "vertical_grid--" + colCount + " js-show", !0)
+    })
+}, A17.Behaviors.volume_content = function(container) {
+    var curActiveTab, curActiveContent, curActiveChildren, curActiveAccordion, header = container.querySelectorAll(".volume-content__header")[0],
+        tabHeader = container.querySelectorAll(".volume-content__header-list--tabs")[0],
+        accordionHeader = container.querySelectorAll(".volume-content__header-list--accordion")[0],
+        tabOptions = tabHeader.querySelectorAll("li"),
+        accordionOptions = accordionHeader.querySelectorAll("li"),
+        underline = container.querySelectorAll(".volume-content__header-underline")[0],
+        $moreLink = $(".word-list__more-link"),
+        images = container.querySelectorAll("img");
+    0 < images.length ? A17.Helpers.images_loaded(images, init.bind(this, tabOptions[0])) : init(tabOptions[0]);
+    for (var i = 0; i < tabOptions.length; i++) $(tabOptions[i]).on("click", changeActiveTab), $(tabOptions[i]).on("mouseover", moveLineTo), $(accordionOptions[i]).on("click", changeActiveAccordion);
+
+    function init(initActive) {
+        A17.Helpers.window_is_small() || (curActiveContent = getContentTarget(initActive), curActiveChildren = getChildren(curActiveContent), curActiveAccordion = curActiveContent.parentNode, curActiveTab = initActive, $(curActiveAccordion).addClass("active"), $(curActiveTab).addClass("active"), setOpacity(curActiveChildren, 1))
+    }
+
+    function moveLineTo(option, forceActive) {
+        if (!A17.Helpers.window_is_small()) {
+            "" !== option.type && (option = this);
+            var color = $(option).hasClass("active") || forceActive ? "#f42535" : "#000000",
+                optionLeft = option.offsetLeft,
+                optionWidth = option.offsetWidth;
+            $(underline).css({
+                width: optionWidth + "px",
+                left: optionLeft + "px",
+                "background-color": color
+            })
+        }
+    }
+
+    function changeActiveAccordion() {
+        var contentName;
+        A17.Helpers.window_is_small() && ($(curActiveTab).removeClass("active"), $(curActiveAccordion).removeClass("active"), curActiveAccordion = !curActiveAccordion && !$(this).hasClass("active") || curActiveAccordion !== this ? ($(this).addClass("active"), contentName = this.getAttribute("data-content-target"), curActiveTab = tabHeader.querySelectorAll("[data-content-target=" + contentName + "]")[0], this) : void 0, window.scrollTo(0, container.offsetTop))
+    }
+
+    function changeActiveTab() {
+        var newActiveContent = getContentTarget(this);
+        if (newActiveContent && curActiveContent !== newActiveContent) {
+            var oldActiveTab = curActiveTab,
+                oldActiveChildren = curActiveChildren;
+            $(curActiveAccordion).removeClass("active"), $(oldActiveTab).removeClass("active"), curActiveAccordion = (curActiveContent = newActiveContent).parentNode, curActiveTab = this, curActiveChildren = getChildren(curActiveContent), curActiveAccordion.className += " active", curActiveTab.className += " active", $(underline).css({
+                "background-color": "#f42535"
+            }), setOpacity(curActiveChildren, 1), setOpacity(oldActiveChildren, 0)
+        }
+    }
+
+    function opacityHelper(n) {
+        $(this).css({
+            opacity: n
+        })
+    }
+
+    function setOpacity(nodelist, n) {
+        for (var j = 0; j < nodelist.length; j++) {
+            var node = nodelist[j];
+            "#text" !== node.nodeName && setTimeout(opacityHelper.bind(node, n), 100 * j)
+        }
+    }
+
+    function getContentTarget(option) {
+        var contentTargetName = option.getAttribute("data-content-target");
+        return container.querySelectorAll("[data-content=" + contentTargetName + "]")[0]
+    }
+
+    function getChildren(option) {
+        var children = option.querySelectorAll("div");
+        return 0 < children.length ? children : option.querySelectorAll("p")
+    }
+    $(header).on("mouseleave", function() {
+        moveLineTo(curActiveTab)
+    }), $(window).on("media_query_updated", function() {
+        var prevMedia;
+        ! function() {
+            if (curActiveChildren) return "0" == $(curActiveChildren[0]).css("opacity")
+        }() || setOpacity(curActiveChildren, 1), "xlarge" !== (prevMedia = A17.media_query_in_use) && "large" !== prevMedia || !A17.Helpers.window_is_small() || $(header).css("margin-bottom", 0);
+        var active = curActiveTab || accordionOptions[0];
+        moveLineTo(active, !0), init(active)
+    }), $moreLink.on("click", function(event) {
+        if (event.preventDefault(), A17.Helpers.window_is_small()) changeActiveAccordion.call($("[data-content-target=toc]", accordionHeader)[0]);
+        else {
+            var tocTab = $("[data-content-target=toc]", tabHeader)[0];
+            changeActiveTab.call(tocTab), moveLineTo(tocTab, !0), window.scrollTo(0, container.offsetTop + 150)
+        }
+    })
+};
+
